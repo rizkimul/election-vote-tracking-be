@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environment
+venv/
+.env/
+venv.bak/
+.env.bak/
+
+# Environment variables
+.env*
+!.env.example
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+nosetests.xml
+pytestcache/
+.pytest_cache/
+cache/
+*.cover
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Byte-compiled / optimized / DLL files
+build/
+dist/
+
+# Database / SQLite
+*.sqlite3
+*.db
+*.sqlite
+
+# Local settings
+config.local.py
+
+# uvicorn / gunicorn logs
+*.pid
+
+# Docker related
+docker-compose.override.yml
+
+# FastAPI static & media (optional)
+staticfiles/
+media/
+
+# Jupyter (if you use notebooks for debugging)
+.ipynb_checkpoints/
+
+.python-version
