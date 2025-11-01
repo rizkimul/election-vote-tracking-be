@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+SQLAlchemy==1.4.*   # sync style OK
+psycopg2-binary
+python-dotenv
+passlib[bcrypt]
+python-jose
+pydantic
+alembic
+pandas
+openpyxl
