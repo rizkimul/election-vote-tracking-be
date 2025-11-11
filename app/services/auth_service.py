@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from ..config import JWT_SECRET, JWT_ALGO, ACCESS_TOKEN_EXPIRE_MINUTES
 from .. import models
@@ -25,7 +25,7 @@ class AuthService:
 
     def create_token(self, nik: str) -> dict:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        payload = {"sub": nik, "exp": expire.isoformat()}
+        payload = {"sub": nik, "exp": int(expire.timestamp())}
         token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
         return {"access_token": token, "token_type": "bearer"}
 
@@ -34,3 +34,10 @@ class AuthService:
         if not user or not self.verify_password(password, user.hashed_password):
             return None
         return user
+
+    def decode_token(self, token: str):
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+            return payload
+        except JWTError:
+            return None
