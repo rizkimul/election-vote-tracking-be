@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Optional
+from typing import Optional, TypeVar, Generic
+
+T = TypeVar('T')
 
 # --- Auth ---
 class UserCreate(BaseModel):
@@ -51,3 +53,8 @@ class EngagementOut(EngagementCreate):
     id: int
     class Config:
         orm_mode = True
+
+class ResponseData(BaseModel, Generic[T]):
+    status_code: int
+    message: str
+    data: T
