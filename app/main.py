@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .database import engine
 from . import models
-from .routers import auth, votes, engagements, uploads
+from .routers import auth, historical_votes, events, uploads, activity_types
 
 # Create tables if you want (Alembic will handle migrations in production)
 models.Base.metadata.create_all(bind=engine)
@@ -19,20 +19,17 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.middleware("http")
-async def catch_exceptions(request: Request, call_next):
-    try:
-        return await call_next(request)
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": str(e)}
-        )
+
 
 app.include_router(auth.router)
-app.include_router(votes.router)
-app.include_router(engagements.router)
+app.include_router(historical_votes.router)
+app.include_router(events.router)
+app.include_router(activity_types.router)
 app.include_router(uploads.router)
+from .routers import analytics
+app.include_router(analytics.router)
+from .routers import prioritization
+app.include_router(prioritization.router)
 
 @app.get("/")
 def home():
