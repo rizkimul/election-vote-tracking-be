@@ -1,28 +1,38 @@
 from fastapi import APIRouter, UploadFile, Depends, HTTPException
-from ..deps import get_vote_service
+from fastapi.responses import JSONResponse
+from ..deps import get_historical_vote_service, get_current_user
 import pandas as pd
-from io import BytesIO
+from io import BytesIO, StringIO
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
 @router.post("/votes-excel")
-async def upload_votes_excel(file: UploadFile, svc = Depends(get_vote_service)):
-    if not file.filename.endswith((".xls", ".xlsx")):
-        raise HTTPException(status_code=400, detail="Must be an Excel file (.xls or .xlsx)")
-
-    contents = await file.read()
+async def upload_votes_excel(file: UploadFile, svc = Depends(get_historical_vote_service)):
     try:
-        df = pd.read_excel(BytesIO(contents))
+        if not file.filename.endswith((".xls", ".xlsx")):
+            raise HTTPException(status_code=400, detail="Must be an Excel file (.xls or .xlsx)")
+
+        contents = await file.read()
+        svc.import_votes_from_file(contents, filename=file.filename)
+        return {"status":"ok", "message":"Imported votes"}
+    except HTTPException as e:
+        return JSONResponse(
+            status_code=e.status_code,
+            content={
+                "status": e.status_code,
+                "message": e.detail
+            }
+        )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to parse Excel: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": 500,
+                "message": str(e) if e else "Internal Server Error"
+            }
+        )
 
-    # validate required columns
-    required = {"district","sub_district","village","total_votes","election_year"}
-    if not required.issubset(set(df.columns.str.lower())) and not required.issubset(set(df.columns)):
-        # try lowercased columns: normalize
-        df.columns = [c.lower() for c in df.columns]
-    if not required.issubset(set(df.columns)):
-        raise HTTPException(status_code=400, detail=f"Excel must contain columns: {required}")
+# @router.post("/engagements-excel")
+# Pending implementation for new Event structure
+# async def upload_engagements_excel(...)
 
-    svc.import_votes_from_dataframe(df)
-    return {"status":"ok", "message":"Imported votes"}

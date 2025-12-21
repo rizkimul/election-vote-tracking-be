@@ -1,67 +1,117 @@
+# -----------------------------
 # Python
+# -----------------------------
 __pycache__/
 *.py[cod]
-*.so
-*.pyd
 *.pyo
-*.egg-info/
+*.pyd
+*.so
 *.egg
+*.egg-info/
+dist/
+build/
+.eggs/
 *.log
 
-# Virtual environment
+# -----------------------------
+# Virtual Environment
+# -----------------------------
+.env
+.venv
 venv/
-.env/
-venv.bak/
-.env.bak/
+ENV/
+env.bak/
+env/
 
-# Environment variables
-.env*
-!.env.example
+# -----------------------------
+# Environment Variables & Secrets
+# -----------------------------
+.env.local
+.env.*.local
+.env.dev
+.env.prod
+.env.test
 
-# PyInstaller
-*.manifest
-*.spec
+# -----------------------------
+# Alembic
+# -----------------------------
+alembic/__pycache__/
+alembic/*.pyc
+alembic/versions/*.pyc
+# You can uncomment next line if you generate large or local-only migrations
+# alembic/versions/*.py
 
-# Unit test / coverage
-.coverage
-coverage.xml
-htmlcov/
-.tox/
-nosetests.xml
-pytestcache/
-.pytest_cache/
+# -----------------------------
+# Database & Cache Files
+# -----------------------------
+*.db
+*.sqlite3
+*.sqlite
+data/
+tmp/
 cache/
-*.cover
+__cache__/
 
-# IDE & Editor files
+# -----------------------------
+# Uploaded / Generated Files
+# -----------------------------
+uploads/
+media/
+*.xls
+*.xlsx
+*.csv
+*.pdf
+
+# -----------------------------
+# IDE / Editor Configs
+# -----------------------------
 .vscode/
 .idea/
-*.swp
-*~
+*.sublime-workspace
+*.sublime-project
 
-# Byte-compiled / optimized / DLL files
-build/
-dist/
-
-# Database / SQLite
-*.sqlite3
-*.db
-*.sqlite
-
-# Local settings
-config.local.py
-
-# uvicorn / gunicorn logs
+# -----------------------------
+# Logs & Reports
+# -----------------------------
+*.log
+*.out
+*.err
+logs/
 *.pid
 
-# Docker related
-docker-compose.override.yml
+# -----------------------------
+# OS Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# FastAPI static & media (optional)
-staticfiles/
-media/
-
-# Jupyter (if you use notebooks for debugging)
-.ipynb_checkpoints/
+# ------------------------------
+# PyEnv
+# ------------------------------
 
 .python-version
+
+# -----------------------------
+# Coverage / Testing
+# -----------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+test-results/
+junit-*.xml
+
+# -----------------------------
+# Docker
+# -----------------------------
+docker-compose.override.yml
+*.pid
+*.sock
+
+# -----------------------------
+# Node / Frontend (if any)
+# -----------------------------
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
