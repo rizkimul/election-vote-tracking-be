@@ -25,11 +25,24 @@ class EventService:
         items, total = self.event_repo.list_filtered(offset=offset, limit=size, **kwargs)
         return {"items": items, "total": total, "page": page, "size": size}
 
-    def add_attendee(self, data: schemas.AttendeeCreate):
+    def add_attendee(self, data: schemas.AttendeeCreate, force_add: bool = False):
         # Check if user already attended this event (Unique constraint handle or check)
         existing = self.attendee_repo.get_by_event_and_nik(data.event_id, data.nik)
         if existing:
             raise HTTPException(status_code=400, detail="NIK already registered for this event")
+        
+        # If not force_add, check for duplicates across other events
+        if not force_add:
+            duplicates = self.check_nik_duplicates(data.nik, data.event_id)
+            if duplicates["exists"]:
+                raise HTTPException(
+                    status_code=409,  # Conflict status
+                    detail={
+                        "type": "duplicate_warning",
+                        "message": "NIK sudah terdaftar di kegiatan lain",
+                        "activities": duplicates["activities"]
+                    }
+                )
         
         # Check capacity
         event = self.event_repo.db.query(models.Event).get(data.event_id)
@@ -42,6 +55,37 @@ class EventService:
 
         obj = models.Attendee(**data.dict())
         return self.attendee_repo.create(obj)
+
+    def check_nik_duplicates(self, nik: str, current_event_id: int = None):
+        """Check if NIK exists in other events, return activity info"""
+        existing = self.attendee_repo.get_all_by_nik(nik)
+        
+        # Filter out current event if provided
+        if current_event_id:
+            existing = [a for a in existing if a.event_id != current_event_id]
+        
+        if not existing:
+            return {"exists": False, "activities": []}
+        
+        # Get activity details for each duplicate
+        activities = []
+        for attendee in existing:
+            event = self.event_repo.db.query(models.Event).get(attendee.event_id)
+            if event:
+                location_parts = []
+                if event.kecamatan:
+                    location_parts.append(event.kecamatan)
+                if event.desa:
+                    location_parts.append(event.desa)
+                location = ", ".join(location_parts) if location_parts else (event.dapil or "-")
+                
+                activities.append({
+                    "activity_name": event.activity_type.name if event.activity_type else "Unknown",
+                    "date": str(event.date),
+                    "location": location
+                })
+        
+        return {"exists": True, "activities": activities}
 
     def list_attendees(self, event_id: int, page=1, size=50):
         offset = (page - 1) * size
