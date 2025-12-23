@@ -48,7 +48,7 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
         if "nik" in error_info.lower():
             return JSONResponse(
                 status_code=400,
-                content={"detail": "Gagal: NIK/NIS sudah terdaftar dalam sistem."}
+                content={"detail": "Gagal: NIK/NIS sudah terdaftar pada kegiatan ini."}
             )
         if "username" in error_info.lower():
             return JSONResponse(
