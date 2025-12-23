@@ -29,9 +29,24 @@ def list_events(page: int = Query(1, ge=1),
     # Returning dict with items/total/page/size
     return svc.list_events(page=page, size=size, dapil=dapil, date_from=date_from, date_to=date_to, activity_type_id=activity_type_id)
 
+@router.get("/check-nik/{nik}")
+def check_nik_duplicate(
+    nik: str, 
+    current_event_id: Optional[int] = None,
+    svc = Depends(get_event_service), 
+    user = Depends(get_current_user)
+):
+    """Check if NIK exists in any events, return activity info"""
+    return svc.check_nik_duplicates(nik, current_event_id)
+
 @router.post("/attendees", response_model=AttendeeOut)
-def add_attendee(payload: AttendeeCreate, svc = Depends(get_event_service), user = Depends(get_current_user)):
-    return svc.add_attendee(payload)
+def add_attendee(
+    payload: AttendeeCreate, 
+    force_add: bool = Query(False, description="Force add even if NIK exists in other events"),
+    svc = Depends(get_event_service), 
+    user = Depends(get_current_user)
+):
+    return svc.add_attendee(payload, force_add=force_add)
 
 @router.get("/attendees/all")
 def list_all_attendees(
