@@ -82,8 +82,9 @@ class Attendee(Base):
     
     event = relationship("Event", back_populates="attendees")
 
-    # Unique constraint on NIK/NIS
-    __table_args__ = (UniqueConstraint('nik', name='unique_attendee_nik'),)
+    # Unique constraint: Same NIK/NIS cannot be added to the same event twice
+    # But same NIK CAN attend multiple different events
+    __table_args__ = (UniqueConstraint('event_id', 'nik', name='unique_attendee_per_event'),)
 
 
 class ImportLog(Base):
