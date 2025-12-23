@@ -6,7 +6,8 @@ from .database import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    nik = Column(String, unique=True, index=True, nullable=False)
+    nik = Column(String, unique=True, index=True, nullable=True)  # Keep for backward compatibility
+    username = Column(String, unique=True, index=True, nullable=True)  # New login field
     name = Column(String, nullable=False)
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
@@ -40,7 +41,9 @@ class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
     activity_type_id = Column(Integer, ForeignKey("activity_types.id"))
-    dapil = Column(String, nullable=False)
+    dapil = Column(String, nullable=True)  # Category above kecamatan (kept for hierarchy)
+    kecamatan = Column(String, nullable=False)  # New: Primary location field
+    desa = Column(String, nullable=True)  # New: Desa/Kelurahan
     # location_hierarchy can store JSON like {"kabupaten": "X", "kecamatan": "Y"}
     location_hierarchy = Column(JSON, nullable=True) 
     date = Column(Date, nullable=False)
@@ -55,17 +58,23 @@ class Attendee(Base):
     __tablename__ = "attendees"
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey("events.id"))
-    nik = Column(String, index=True, nullable=False) # Unique index per requirements (one person, one vote/attendance context?)
+    
+    # Identifier fields - NIK or NIS (for education activities)
+    nik = Column(String, index=True, nullable=False)  # Stores NIK or NIS value
+    identifier_type = Column(String, default="NIK")  # "NIK" or "NIS"
     name = Column(String)
     
-    # Redundant location data for easier flat querying/heatmap if needed, 
-    # or rely on Event. For now, keeping flat location details from PRD might be useful 
-    # but PRD says "Link attendees to specific events".
-    # I will keep NIK and Name as primary. 
-    # If the user wants granular "Hamlet/RT/RW" per attendee (which is deeper than Event location), add it.
-    # PRD "Manual Potensi Suara Entry" -> NIK, Nama, Kecamatan, Desa, Kampung, RT/RW.
+    # Location fields
     kecamatan = Column(String, nullable=True)
     desa = Column(String, nullable=True)
+    alamat = Column(String, nullable=True)  # Combined address (replaces kampung + RT/RW)
+    
+    # New demographic fields for SABADESA
+    jenis_kelamin = Column(String, nullable=True)  # "L" (Laki-laki) or "P" (Perempuan)
+    pekerjaan = Column(String, nullable=True)  # Occupation
+    usia = Column(Integer, nullable=True)  # Age in years
+    
+    # Legacy fields (kept for backward compatibility)
     kampung = Column(String, nullable=True)
     rt_rw = Column(String, nullable=True)
     
@@ -73,10 +82,7 @@ class Attendee(Base):
     
     event = relationship("Event", back_populates="attendees")
 
-    # PRD: "Prevent duplicate NIK entries". 
-    # Implementing Unique Constraint on NIK. 
-    # If this should be Per Event, we change to (event_id, nik).
-    # Based on approved plan assumption:
+    # Unique constraint on NIK/NIS
     __table_args__ = (UniqueConstraint('nik', name='unique_attendee_nik'),)
 
 
