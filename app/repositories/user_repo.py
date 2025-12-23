@@ -8,6 +8,10 @@ class UserRepository:
     def get_by_nik(self, nik: str):
         return self.db.query(models.User).filter(models.User.nik == nik).first()
 
+    def get_by_username(self, username: str):
+        # \"\"\"Get user by username for SABADESA login\"\"\"
+        return self.db.query(models.User).filter(models.User.username == username).first()
+
     def create(self, user: models.User):
         self.db.add(user)
         self.db.commit()
