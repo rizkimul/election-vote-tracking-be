@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/register", response_model=UserOut)
 def register(user: UserCreate, auth_svc=Depends(get_auth_service)):
     try:
-        new = auth_svc.register(user.nik, user.name, user.password)
+        new = auth_svc.register(user.username, user.name, user.password, user.nik)
         return new
     except HTTPException as e:
         return JSONResponse(
@@ -68,10 +68,12 @@ def change_password(data: PasswordChange, current_user: User = Depends(get_curre
 def login(payload: LoginSchema, auth_svc=Depends(get_auth_service)):
     try:
             
-        user = auth_svc.authenticate(payload.nik, payload.password)
+        user = auth_svc.authenticate(payload.username, payload.password)
         if not user:
             raise HTTPException(status_code=400, detail="Invalid credentials")
-        token = auth_svc.create_token(user.nik)
+        # Use username as the token identifier, fallback to NIK for legacy users
+        identifier = user.username or user.nik
+        token = auth_svc.create_token(identifier)
         return token
     except HTTPException as e:
         return JSONResponse(
