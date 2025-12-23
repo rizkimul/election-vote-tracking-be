@@ -71,3 +71,28 @@ class EventService:
                 "participants": count
             })
         return results
+
+    def list_all_attendees(self, kecamatan: str = None, desa: str = None):
+        """Get all attendees with optional location filters for export"""
+        query = self.attendee_repo.db.query(models.Attendee)
+        
+        if kecamatan:
+            query = query.filter(models.Attendee.kecamatan == kecamatan)
+        if desa:
+            query = query.filter(models.Attendee.desa == desa)
+            
+        attendees = query.all()
+        return [
+            {
+                "id": a.id,
+                "nik": a.nik,
+                "name": a.name,
+                "kecamatan": a.kecamatan,
+                "desa": a.desa,
+                "alamat": getattr(a, 'alamat', None),  # New SABADESA field
+                "jenis_kelamin": getattr(a, 'jenis_kelamin', None),
+                "pekerjaan": getattr(a, 'pekerjaan', None),
+                "usia": getattr(a, 'usia', None),
+            }
+            for a in attendees
+        ]
