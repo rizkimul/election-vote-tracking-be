@@ -18,22 +18,29 @@ class AuthService:
     def verify_password(self, plain: str, hashed: str) -> bool:
         return pwd_ctx.verify(plain, hashed)
 
-    def register(self, nik: str, name: str, password: str):
-        if self.user_repo.get_by_nik(nik):
-            raise ValueError("NIK already registered")
+    def register(self, username: str, name: str, password: str, nik: str = None):
+        """Register new user with username (SABADESA) or NIK (legacy)"""
+        if self.user_repo.get_by_username(username):
+            raise ValueError("Username already registered")
         hashed = self.hash_password(password)
-        user = models.User(nik=nik, name=name, hashed_password=hashed)
+        user = models.User(username=username, name=name, hashed_password=hashed, nik=nik)
         return self.user_repo.create(user)
 
-    def create_token(self, nik: str) -> dict:
+    def create_token(self, identifier: str) -> dict:
+        """Create JWT token using username or NIK as identifier"""
         import time
         expire = int(time.time()) + (ACCESS_TOKEN_EXPIRE_MINUTES * 60)
-        payload = {"sub": nik, "exp": expire}
+        payload = {"sub": identifier, "exp": expire}
         token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
         return {"access_token": token, "token_type": "bearer"}
 
-    def authenticate(self, nik: str, password: str):
-        user = self.user_repo.get_by_nik(nik)
+    def authenticate(self, username: str, password: str):
+        """Authenticate user by username (primary) or NIK (fallback for legacy)"""
+        # Try username first (SABADESA)
+        user = self.user_repo.get_by_username(username)
+        # Fallback to NIK for backward compatibility
+        if not user:
+            user = self.user_repo.get_by_nik(username)
         if not user or not self.verify_password(password, user.hashed_password):
             return None
         return user
