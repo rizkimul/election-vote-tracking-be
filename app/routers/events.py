@@ -33,6 +33,16 @@ def list_events(page: int = Query(1, ge=1),
 def add_attendee(payload: AttendeeCreate, svc = Depends(get_event_service), user = Depends(get_current_user)):
     return svc.add_attendee(payload)
 
+@router.get("/attendees/all")
+def list_all_attendees(
+    kecamatan: Optional[str] = None,
+    desa: Optional[str] = None,
+    svc = Depends(get_event_service), 
+    user = Depends(get_current_user)
+):
+    """Get all attendees with optional filters for export functionality"""
+    return svc.list_all_attendees(kecamatan=kecamatan, desa=desa)
+
 @router.get("/{event_id}/attendees", response_model=List[AttendeeOut])
 def list_attendees(event_id: int, 
                    page: int = 1, 
