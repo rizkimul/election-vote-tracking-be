@@ -1,72 +1,93 @@
 from typing import List, Dict, Any
 from sqlalchemy import func
 from .. import models
-from ..repositories.historical_vote_repo import HistoricalVoteRepository
 from ..repositories.event_repo import EventRepository
+from ..repositories.attendee_repo import AttendeeRepository
 
 class PrioritizationService:
-    def __init__(self, vote_repo: HistoricalVoteRepository, event_repo: EventRepository):
-        self.vote_repo = vote_repo
+    def __init__(self, event_repo: EventRepository, attendee_repo: AttendeeRepository):
         self.event_repo = event_repo
+        self.attendee_repo = attendee_repo
 
     def get_suggestions(self) -> List[Dict[str, Any]]:
-        # 1. Get Votes per Kecamatan
-        votes_query = self.vote_repo.db.query(
-            models.HistoricalVote.kecamatan,
-            func.sum(models.HistoricalVote.total_votes).label('total_votes')
-        ).group_by(models.HistoricalVote.kecamatan).all()
-
-        vote_map = {row.kecamatan: row.total_votes for row in votes_query if row.kecamatan}
-
-        # 2. Get Events per Kecamatan
-        # Since location is JSON, we process in Python for simplicity in this MVP
-        # Fetching all events might be heavy in prod, but fine for MVP
-        results_tuple = self.event_repo.list_filtered(limit=5000) 
-        all_events = results_tuple[0] # list_filtered returns (items, total)
+        # 1. Get Event Counts per Kecamatan
+        events_query = self.event_repo.db.query(
+            models.Event.kecamatan,
+            func.count(models.Event.id).label('event_count')
+        ).group_by(models.Event.kecamatan).all()
         
-        event_counts = {}
-        for event in all_events:
-            # Assume location_hierarchy is dict like {"kecamatan": "Name"}
-            # In SQLite it comes out as dict if stored as JSON
-            if event.location_hierarchy and isinstance(event.location_hierarchy, dict):
-                kec = event.location_hierarchy.get("kecamatan")
-                if kec:
-                    event_counts[kec] = event_counts.get(kec, 0) + 1
-
-        # 3. Calculate Score
+        event_map = {row.kecamatan: row.event_count for row in events_query if row.kecamatan}
+        
+        # 2. Get Attendee Counts per Kecamatan
+        attendees_query = self.attendee_repo.db.query(
+            models.Attendee.kecamatan,
+            func.count(models.Attendee.id).label('attendee_count')
+        ).group_by(models.Attendee.kecamatan).all()
+        
+        attendee_map = {row.kecamatan: row.attendee_count for row in attendees_query if row.kecamatan}
+        
+        # Combine list of all known kecamatans from both sources
+        all_kecamatans = set(event_map.keys()) | set(attendee_map.keys())
+        
         results = []
-        for kecamatan, actual_votes in vote_map.items():
-            # Heuristic: Target is 30% growth from historical (or 1000 minimum)
-            target_votes = max(actual_votes * 1.3, 1000) 
-            gap = target_votes - actual_votes
+        for kecamatan in all_kecamatans:
+            event_count = event_map.get(kecamatan, 0)
+            attendee_count = attendee_map.get(kecamatan, 0)
             
-            # Ensure gap is positive for scoring
-            gap = max(0, gap)
+            # Logic: 
+            # - High events (> 5) -> "Sering dikunjungi" (Flag as observation)
+            # - Low events (< 2) -> "Perlu perhatian" (Priority)
+            # - High events but Low attendees -> "Inefektif"
             
-            event_count = event_counts.get(kecamatan, 0)
+            score = 0
+            reason = ""
             
-            # Score: High Gap + Low Events = High Score
-            # Formula: Gap * (1 / (Events + 1))
-            urgency_score = gap * (10 / (event_count + 1))
+            if event_count > 5:
+                score = 10 # High score implies "Attention needed" or just "Top list"?
+                # Request was: "munculkan juga daerah yang terlalu sering dikunjungi"
+                # If we want to verify "frequency", we can say high score but reason is "High Frequency"
+                # Let's start with a base score.
+                # Usually Prioritization means "Where should I go next?". 
+                # If it's visited too often, maybe priority is LOW to go again? 
+                # BUT user wants it SHOWN.
+                # Let's map score to "Interest Level".
+                
+                # Let's invert: 
+                # Priority is normally for "Missing" areas.
+                # But let's follow the frontend logic which probably sorts by score desc.
+                # If I want to show "Too often", I can give it a distinct score or reason.
+                pass
             
+            # Simple Scoring for MVP SABADESA
+            # We want to surface:
+            # 1. Areas with Very High activity (Observation)
+            # 2. Areas with Low activity (Action needed)
+            
+            if event_count == 0:
+                 # Won't be in this loop unless in attendee_map (unlikely if no events)
+                 # We need a master list of Kecamatans to show true zeros, but omitting for now.
+                 pass
+            elif event_count < 3:
+                score = 80
+                reason = "Kegiatan masih minim, perlu ditingkatkan"
+            elif event_count > 8:
+                score = 90
+                reason = "Frekuensi kunjungan sangat tinggi (Over-visited)"
+            elif attendee_count < 50 and event_count > 3:
+                score = 70
+                reason = "Kegiatan cukup tapi partisipan rendah (Evaluasi)"
+            else:
+                score = 40
+                reason = "Kondisi kegiatan terpantau stabil"
+
             results.append({
                 "kecamatan": kecamatan,
-                "score": int(urgency_score),
-                "actual_votes": actual_votes,
-                "target_votes": int(target_votes),
+                "score": score,
+                "participant_count": attendee_count, # Replaces actual_votes
                 "event_count": event_count,
-                "reason": self._generate_reason(gap, event_count)
+                "reason": reason
             })
 
-        # Sort by score desc
+        # Sort by score desc to show important ones first (High freq or Low freq)
         results.sort(key=lambda x: x["score"], reverse=True)
-        return results[:10] # Top 10 recommendations
-
-    def _generate_reason(self, gap, events):
-        if events == 0:
-            return "Belum ada kegiatan di wilayah ini"
-        if gap > 2000:
-            return "Potensi suara sangat tinggi, perlu intensifikasi"
-        if gap > 500:
-            return "Perlu penguatan basis suara"
-        return "Maintenance rutin diperlukan"
+        return results[:15]
