@@ -56,6 +56,9 @@ class PasswordChange(BaseModel):
     current_password: str
     new_password: str
 
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str
+
 # --- Historical Vote ---
 class HistoricalVoteCreate(BaseModel):
     dapil: str

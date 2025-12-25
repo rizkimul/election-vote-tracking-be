@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from ..schemas import UserCreate, UserOut, LoginSchema, UserUpdate, PasswordChange
+from ..schemas import UserCreate, UserOut, LoginSchema, UserUpdate, PasswordChange, RefreshTokenSchema
 from ..deps import get_auth_service, get_current_user
 from ..models import User
 
@@ -73,7 +73,7 @@ def login(payload: LoginSchema, auth_svc=Depends(get_auth_service)):
             raise HTTPException(status_code=400, detail="Invalid credentials")
         # Use username as the token identifier, fallback to NIK for legacy users
         identifier = user.username or user.nik
-        token = auth_svc.create_token(identifier)
+        token = auth_svc.create_token(identifier, user.id)
         return token
     except HTTPException as e:
         return JSONResponse(
@@ -91,4 +91,31 @@ def login(payload: LoginSchema, auth_svc=Depends(get_auth_service)):
                 "message": str(e) if e else "Internal server error",
             }
         )
+
+@router.post("/refresh")
+def refresh_token(payload: RefreshTokenSchema, auth_svc=Depends(get_auth_service)):
+    try:
+        return auth_svc.refresh_access_token(payload.refresh_token)
+    except HTTPException as e:
+        return JSONResponse(
+            status_code=e.status_code,
+            content={"status": e.status_code, "message": e.detail}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": 500, "message": str(e) if e else "Internal server error"}
+        )
+
+@router.post("/logout")
+def logout(payload: RefreshTokenSchema, auth_svc=Depends(get_auth_service)):
+    try:
+        auth_svc.revoke_refresh_token(payload.refresh_token)
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": 500, "message": str(e) if e else "Internal server error"}
+        )
+
 
