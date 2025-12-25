@@ -29,65 +29,70 @@ class PrioritizationService:
         # Combine list of all known kecamatans from both sources
         all_kecamatans = set(event_map.keys()) | set(attendee_map.keys())
         
+        if not all_kecamatans:
+            return []
+
+        # 3. Calculate Dynamic Benchmarks (Averages)
+        total_events = sum(event_map.values())
+        total_attendees = sum(attendee_map.values())
+        num_districts = len(all_kecamatans)
+        
+        avg_event_count = total_events / num_districts if num_districts > 0 else 0
+        avg_attendee_count = total_attendees / num_districts if num_districts > 0 else 0
+
+        # Define Dynamic Thresholds based on plan
+        # Minim: < 50% of Average Events
+        # Over-visited: > 200% of Average Events
+        # Inefektif: Event > 50% Avg AND Attendee < 50% Avg
+        
+        threshold_minim_event = avg_event_count * 0.5
+        threshold_high_event = avg_event_count * 2.0
+        threshold_low_attendee = avg_attendee_count * 0.5
+
         results = []
         for kecamatan in all_kecamatans:
             event_count = event_map.get(kecamatan, 0)
             attendee_count = attendee_map.get(kecamatan, 0)
             
-            # Logic: 
-            # - High events (> 5) -> "Sering dikunjungi" (Flag as observation)
-            # - Low events (< 2) -> "Perlu perhatian" (Priority)
-            # - High events but Low attendees -> "Inefektif"
-            
             score = 0
             reason = ""
             
-            if event_count > 5:
-                score = 10 # High score implies "Attention needed" or just "Top list"?
-                # Request was: "munculkan juga daerah yang terlalu sering dikunjungi"
-                # If we want to verify "frequency", we can say high score but reason is "High Frequency"
-                # Let's start with a base score.
-                # Usually Prioritization means "Where should I go next?". 
-                # If it's visited too often, maybe priority is LOW to go again? 
-                # BUT user wants it SHOWN.
-                # Let's map score to "Interest Level".
-                
-                # Let's invert: 
-                # Priority is normally for "Missing" areas.
-                # But let's follow the frontend logic which probably sorts by score desc.
-                # If I want to show "Too often", I can give it a distinct score or reason.
-                pass
-            
-            # Simple Scoring for MVP SABADESA
-            # We want to surface:
-            # 1. Areas with Very High activity (Observation)
-            # 2. Areas with Low activity (Action needed)
-            
-            if event_count == 0:
-                 # Won't be in this loop unless in attendee_map (unlikely if no events)
-                 # We need a master list of Kecamatans to show true zeros, but omitting for now.
-                 pass
-            elif event_count < 3:
+            # Dynamic Logic Implementation
+            if event_count < threshold_minim_event:
+                # Priority: High (Need to schedule events)
                 score = 80
-                reason = "Kegiatan masih minim, perlu ditingkatkan"
-            elif event_count > 8:
+                reason = "Wilayah ini tertinggal jauh dari standar kampanye. Prioritas Utama."
+            
+            elif event_count > threshold_high_event:
+                # Priority: High (as per old logic "Over-visited" is high score but different reason)
+                # Or maybe user wants to flag it. Keeping score high as "Important to Notice"
                 score = 90
-                reason = "Frekuensi kunjungan sangat tinggi (Over-visited)"
-            elif attendee_count < 50 and event_count > 3:
+                reason = "Wilayah ini mendapatkan porsi kegiatan yang sangat masif (2x lipat standar)."
+                
+            elif event_count > threshold_minim_event and attendee_count < threshold_low_attendee:
+                # Ineffective: Active enough, but low turnout
                 score = 70
-                reason = "Kegiatan cukup tapi partisipan rendah (Evaluasi)"
+                reason = "Kegiatan sering, tapi massa sedikit. Strategi acara perlu dievaluasi."
+                
             else:
+                # Stable / Normal
                 score = 40
-                reason = "Kondisi kegiatan terpantau stabil"
+                reason = "Wilayah ini berjalan on-track sesuai ritme rata-rata kampanye."
+
+            # Special case for 0 events if not caught above
+            if event_count == 0:
+                 score = 85
+                 reason = "Belum ada kegiatan sama sekali. Perlu segera dijadwalkan."
 
             results.append({
                 "kecamatan": kecamatan,
                 "score": score,
-                "participant_count": attendee_count, # Replaces actual_votes
+                "participant_count": attendee_count,
                 "event_count": event_count,
-                "reason": reason
+                "reason": reason,
+                # Optional: return stats for debugging if needed, but keeping schema clean for now
             })
 
-        # Sort by score desc to show important ones first (High freq or Low freq)
+        # Sort by score desc
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:15]
