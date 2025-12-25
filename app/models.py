@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, JSON, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Date, Float, ForeignKey, JSON, DateTime, UniqueConstraint, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -95,5 +95,20 @@ class ImportLog(Base):
     records_count = Column(Integer, default=0)
     error_message = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    revoked = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="refresh_tokens")
+
+
+User.refresh_tokens = relationship("RefreshToken", order_by=RefreshToken.id, back_populates="user")
 
 
