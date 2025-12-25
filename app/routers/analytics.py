@@ -14,8 +14,8 @@ def get_votes_summary(dapil: Optional[str] = None, kecamatan: Optional[str] = No
     return svc.get_votes_summary(dapil=dapil, kecamatan=kecamatan, source=source)
 
 @router.get("/heatmap")
-def get_heatmap_data(dapil: Optional[str] = None, kecamatan: Optional[str] = None, source: Optional[str] = 'all', svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
-    return svc.get_heatmap_data(dapil=dapil, kecamatan=kecamatan, source=source)
+def get_heatmap_data(dapil: Optional[str] = None, kecamatan: Optional[str] = None, source: Optional[str] = 'all', level: Optional[str] = 'kecamatan', svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
+    return svc.get_heatmap_data(dapil=dapil, kecamatan=kecamatan, source=source, level=level)
 
 @router.get("/engagement/trends")
 def get_engagement_trends(svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):

@@ -36,43 +36,91 @@ class AnalyticsService:
 
         wilayah_count = wilayah_query.scalar() or 0
         
+        # Count active desa/kelurahan
+        desa_query = self.attendee_repo.db.query(func.count(func.distinct(models.Attendee.desa)))
+        if kecamatan:
+             desa_query = desa_query.filter(models.Attendee.kecamatan == kecamatan)
+        
+        desa_count = desa_query.scalar() or 0
+        
         return {
             "total_events": total_events,
             "total_attendees": total_attendees,
             "total_votes": 0,  # Legacy field, returning 0
             "total_votes_web": 0,
             "total_votes_import": 0,
-            "wilayah_count": wilayah_count
+            "wilayah_count": wilayah_count,
+            "desa_count": desa_count
         }
 
     def get_votes_summary(self, dapil: str = None, kecamatan: str = None, source: str = 'all') -> List[Dict[str, Any]]:
         # SABADESA: Vote tracking removed. Return empty list.
         return []
 
-    def get_heatmap_data(self, dapil: str = None, kecamatan: str = None, source: str = 'all') -> List[Dict[str, Any]]:
-        # SABADESA: Aggregate participants per Kecamatan
-        # Returning list of { "kecamatan": "Name", "intensity": 100 }
+    def get_heatmap_data(self, dapil: str = None, kecamatan: str = None, source: str = 'all', level: str = 'kecamatan') -> List[Dict[str, Any]]:
+        # SABADESA: Aggregate participants per Kecamatan or Desa
         
+        if level == 'all':
+            # Fetch both and combine
+            # 1. Kecamatan
+            q_kec = self.attendee_repo.db.query(
+                models.Attendee.kecamatan.label('region_name'), 
+                func.count(models.Attendee.id).label('total')
+            ).filter(models.Attendee.kecamatan != None)
+            
+            if dapil:
+                q_kec = q_kec.join(models.Event).filter(models.Event.dapil == dapil)
+            if kecamatan: # If filtered by specific kecamatan, only show that kecamatan aggregate
+                q_kec = q_kec.filter(models.Attendee.kecamatan == kecamatan)
+                
+            q_kec = q_kec.group_by(models.Attendee.kecamatan)
+            res_kec = q_kec.all()
+            
+            # 2. Desa
+            q_desa = self.attendee_repo.db.query(
+                models.Attendee.desa.label('region_name'), 
+                func.count(models.Attendee.id).label('total')
+            ).filter(models.Attendee.desa != None)
+
+            if dapil:
+                q_desa = q_desa.join(models.Event).filter(models.Event.dapil == dapil)
+            if kecamatan:
+                q_desa = q_desa.filter(models.Attendee.kecamatan == kecamatan)
+                
+            q_desa = q_desa.group_by(models.Attendee.desa)
+            res_desa = q_desa.all()
+            
+            # Combine
+            data = [{"kecamatan": row.region_name, "intensity": row.total, "type": "Kecamatan"} for row in res_kec]
+            data.extend([{"kecamatan": row.region_name, "intensity": row.total, "type": "Desa"} for row in res_desa])
+            
+            return data
+
+        group_col = models.Attendee.kecamatan
+        if level == 'desa':
+            group_col = models.Attendee.desa
+
         query = self.attendee_repo.db.query(
-            models.Attendee.kecamatan, 
+            group_col.label('region_name'), 
             func.count(models.Attendee.id).label('total')
         )
         
         # Join with event if we need to filter by Dapil (and Attendee doesn't have it, though Event does)
-        # Attendee has kecamatan, so we group by that.
-        # If filtering by Dapil, we might need to filter attendees whose events are in that Dapil
         if dapil:
             query = query.join(models.Event).filter(models.Event.dapil == dapil)
             
         if kecamatan:
             query = query.filter(models.Attendee.kecamatan == kecamatan)
             
-        # Group by non-null kecamatan
-        query = query.filter(models.Attendee.kecamatan != None).group_by(models.Attendee.kecamatan)
+        # Group by non-null region
+        query = query.filter(group_col != None).group_by(group_col)
         
         result = query.all()
         
-        return [{"kecamatan": row.kecamatan, "intensity": row.total, "type": "participants"} for row in result]
+        # Return "kecamatan" key for backward compatibility, or use region_name
+        # The frontend expects "kecamatan" currently. 
+        # We map region_name to "kecamatan" key.
+        return [{"kecamatan": row.region_name, "intensity": row.total, "type": level.capitalize()} for row in result]
 
     def get_engagement_trends(self) -> List[Dict[str, Any]]:
         # Aggregate attendees by month
