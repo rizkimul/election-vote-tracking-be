@@ -24,3 +24,14 @@ class ActivityTypeService:
         self.repo.delete(activity_type)
         return {"message": "Activity type deleted successfully"}
 
+    def update_activity_type(self, activity_type_id: int, data: schemas.ActivityTypeCreate):
+        activity_type = self.repo.get_by_id(activity_type_id)
+        if not activity_type:
+            raise HTTPException(status_code=404, detail="Activity type not found")
+        
+        # Update fields
+        activity_type.name = data.name
+        activity_type.max_participants = data.max_participants
+        
+        return self.repo.update(activity_type)
+

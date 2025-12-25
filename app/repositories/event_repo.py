@@ -31,5 +31,21 @@ class EventRepository:
             q = q.filter(models.Event.date <= date_to)
         
         total = q.count()
+        total = q.count()
         items = q.offset(offset).limit(limit).all()
         return items, total
+
+    def get(self, id: int) -> Optional[models.Event]:
+        return self.db.query(models.Event).get(id)
+
+    def update(self, event: models.Event, data: dict):
+        for key, value in data.items():
+            setattr(event, key, value)
+        self.db.commit()
+        self.db.refresh(event)
+        return event
+
+    def delete(self, event: models.Event):
+        self.db.delete(event)
+        self.db.commit()
+

@@ -50,13 +50,27 @@ def add_attendee(
 
 @router.get("/attendees/all")
 def list_all_attendees(
-    kecamatan: Optional[str] = None,
+    kecamatan: Optional[List[str]] = Query(None),
     desa: Optional[str] = None,
     svc = Depends(get_event_service), 
     user = Depends(get_current_user)
 ):
     """Get all attendees with optional filters for export functionality"""
     return svc.list_all_attendees(kecamatan=kecamatan, desa=desa)
+
+@router.put("/{event_id}", response_model=EventOut)
+def update_event(event_id: int, payload: EventCreate, svc = Depends(get_event_service), user = Depends(get_current_user)):
+    try:
+        return svc.update_event(event_id, payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{event_id}")
+def delete_event(event_id: int, svc = Depends(get_event_service), user = Depends(get_current_user)):
+    try:
+        return svc.delete_event(event_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{event_id}/attendees", response_model=List[AttendeeOut])
 def list_attendees(event_id: int, 
