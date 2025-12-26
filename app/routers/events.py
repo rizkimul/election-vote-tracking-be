@@ -24,11 +24,10 @@ def list_events(page: int = Query(1, ge=1),
                 date_from: Optional[date] = None,
                 date_to: Optional[date] = None,
                 activity_type_id: Optional[int] = None,
-                search: Optional[str] = None,
                 svc = Depends(get_event_service),
                 user = Depends(get_current_user)):
     # Returning dict with items/total/page/size
-    return svc.list_events(page=page, size=size, dapil=dapil, date_from=date_from, date_to=date_to, activity_type_id=activity_type_id, search=search)
+    return svc.list_events(page=page, size=size, dapil=dapil, date_from=date_from, date_to=date_to, activity_type_id=activity_type_id)
 
 @router.get("/check-nik/{nik}")
 def check_nik_duplicate(
