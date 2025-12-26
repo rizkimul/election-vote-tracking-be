@@ -156,17 +156,29 @@ class EventService:
             query = query.filter(models.Attendee.desa == desa)
             
         attendees = query.all()
-        return [
-            {
+        results = []
+        for a in attendees:
+            # Construct address from legacy fields if main field is empty
+            address = getattr(a, 'alamat', None)
+            if not address:
+                parts = []
+                if getattr(a, 'kampung', None):
+                    parts.append(a.kampung)
+                if getattr(a, 'rt_rw', None):
+                    parts.append(f"RT/RW {a.rt_rw}")
+                if parts:
+                    address = ", ".join(parts)
+            
+            results.append({
                 "id": a.id,
                 "nik": a.nik,
                 "name": a.name,
                 "kecamatan": a.kecamatan,
                 "desa": a.desa,
-                "alamat": getattr(a, 'alamat', None),  # New SABADESA field
+                "alamat": address,
                 "jenis_kelamin": getattr(a, 'jenis_kelamin', None),
                 "pekerjaan": getattr(a, 'pekerjaan', None),
                 "usia": getattr(a, 'usia', None),
-            }
-            for a in attendees
-        ]
+            })
+            
+        return results
