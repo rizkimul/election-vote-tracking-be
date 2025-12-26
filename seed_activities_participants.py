@@ -446,21 +446,10 @@ KECAMATAN_DATA = [
   }
 ]
 
-def seed_data(force=False):
+def seed_data():
     db = SessionLocal()
     try:
         print("Starting seed process...")
-        
-        # Idempotency check: Skip if already seeded
-        existing_event_count = db.query(Event).count()
-        SEED_THRESHOLD = 60  # We expect at least 62 events from seeding
-        
-        if existing_event_count >= SEED_THRESHOLD and not force:
-            print(f"\n⚠️  Database already contains {existing_event_count} events.")
-            print("   Seeding skipped to prevent duplicate data.")
-            print("   To force re-seeding, run with --force flag:")
-            print("   python3 seed_activities_participants.py --force")
-            return
         
         # 1. Get ALL existing ActivityTypes from the database
         all_activity_types = db.query(ActivityType).all()
@@ -477,7 +466,6 @@ def seed_data(force=False):
         total_activities = 0
         total_attendees = 0
         activity_type_index = 0  # To rotate through activity types
-
         
         for kec in KECAMATAN_DATA:
             kec_name = kec['name']
@@ -580,8 +568,5 @@ def seed_data(force=False):
         db.close()
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description='Seed activity and participant data')
-    parser.add_argument('--force', action='store_true', help='Force re-seeding even if data exists')
-    args = parser.parse_args()
-    seed_data(force=args.force)
+    seed_data()
+
