@@ -20,14 +20,14 @@ class ActivityTypeService:
     def delete_activity_type(self, activity_type_id: int):
         activity_type = self.repo.get_by_id(activity_type_id)
         if not activity_type:
-            raise HTTPException(status_code=404, detail="Activity type not found")
+            raise HTTPException(status_code=404, detail="Jenis kegiatan tidak ditemukan")
         self.repo.delete(activity_type)
-        return {"message": "Activity type deleted successfully"}
+        return {"message": "Jenis kegiatan berhasil dihapus"}
 
     def update_activity_type(self, activity_type_id: int, data: schemas.ActivityTypeCreate):
         activity_type = self.repo.get_by_id(activity_type_id)
         if not activity_type:
-            raise HTTPException(status_code=404, detail="Activity type not found")
+            raise HTTPException(status_code=404, detail="Jenis kegiatan tidak ditemukan")
         
         # Update fields
         activity_type.name = data.name

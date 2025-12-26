@@ -69,13 +69,13 @@ def get_current_user(token: str = Depends(oauth2_scheme),
                      user_repo: UserRepository = Depends(get_user_repo)):
     payload = auth_svc.decode_token(token)
     if not payload or "sub" not in payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kredensial otentikasi tidak valid")
     identifier = payload["sub"]
     # Try username first (SABADESA), then fallback to NIK (legacy)
     user = user_repo.get_by_username(identifier)
     if not user:
         user = user_repo.get_by_nik(identifier)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Pengguna tidak ditemukan")
     return user
 

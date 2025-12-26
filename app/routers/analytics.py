@@ -25,4 +25,14 @@ def get_engagement_trends(svc: AnalyticsService = Depends(get_analytics_service)
 def get_activity_distribution(svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
     return svc.get_activity_distribution()
 
+@router.get("/participants/gender")
+def get_gender_distribution(svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
+    return svc.get_gender_distribution()
 
+@router.get("/participants/age")
+def get_age_distribution(svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
+    return svc.get_age_distribution()
+
+@router.get("/activities/per-kecamatan")
+def get_activities_per_kecamatan(svc: AnalyticsService = Depends(get_analytics_service), user = Depends(get_current_user)):
+    return svc.get_activities_per_kecamatan()

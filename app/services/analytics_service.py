@@ -146,4 +146,56 @@ class AnalyticsService:
         ).join(models.Event).group_by(models.ActivityType.name).all()
         
         return [{"name": row.name, "value": row.count} for row in query]
-from sqlalchemy import func
+
+    def get_gender_distribution(self) -> List[Dict[str, Any]]:
+        """Aggregate attendees by gender (jenis_kelamin)"""
+        query = self.attendee_repo.db.query(
+            models.Attendee.jenis_kelamin,
+            func.count(models.Attendee.id).label('count')
+        ).filter(models.Attendee.jenis_kelamin != None).group_by(models.Attendee.jenis_kelamin).all()
+        
+        # Map gender codes to labels
+        gender_labels = {"L": "Laki-laki", "P": "Perempuan"}
+        return [{"name": gender_labels.get(row.jenis_kelamin, row.jenis_kelamin), "value": row.count} for row in query]
+
+    def get_age_distribution(self) -> List[Dict[str, Any]]:
+        """Aggregate attendees by age ranges (generations)"""
+        # Fetch all attendees with age data
+        attendees = self.attendee_repo.db.query(models.Attendee.usia).filter(
+            models.Attendee.usia != None
+        ).all()
+        
+        # Define generation-based age ranges (starting from 17 for election eligibility)
+        # Generation name and age range label for display
+        generations = [
+            {"name": "Gen Z", "label": "17-27", "min": 17, "max": 27},
+            {"name": "Millennial", "label": "28-43", "min": 28, "max": 43},
+            {"name": "Gen X", "label": "44-59", "min": 44, "max": 59},
+            {"name": "Baby Boomer", "label": "60-78", "min": 60, "max": 78},
+            {"name": "Silent Gen", "label": "79+", "min": 79, "max": 200},
+        ]
+        
+        # Count by range
+        range_counts = {gen["label"]: 0 for gen in generations}
+        for (usia,) in attendees:
+            for gen in generations:
+                if gen["min"] <= usia <= gen["max"]:
+                    range_counts[gen["label"]] += 1
+                    break
+        
+        # Return with age range as the name for chart labels
+        return [
+            {"name": f"{gen['label']} tahun", "label": gen["label"], "value": range_counts[gen["label"]]} 
+            for gen in generations if range_counts[gen["label"]] > 0
+        ]
+
+    def get_activities_per_kecamatan(self) -> List[Dict[str, Any]]:
+        """Count events per sub-district (kecamatan), return top results for pie chart"""
+        query = self.event_repo.db.query(
+            models.Event.kecamatan,
+            func.count(models.Event.id).label('count')
+        ).filter(models.Event.kecamatan != None).group_by(models.Event.kecamatan).order_by(
+            func.count(models.Event.id).desc()
+        ).limit(7).all()  # Top 7 for readability
+        
+        return [{"name": row.kecamatan, "value": row.count} for row in query]

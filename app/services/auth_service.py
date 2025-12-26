@@ -23,7 +23,7 @@ class AuthService:
     def register(self, username: str, name: str, password: str, nik: str = None):
         """Register new user with username (SABADESA) or NIK (legacy)"""
         if self.user_repo.get_by_username(username):
-            raise ValueError("Username already registered")
+            raise ValueError("Nama pengguna sudah terdaftar")
         hashed = self.hash_password(password)
         user = models.User(username=username, name=name, hashed_password=hashed, nik=nik)
         return self.user_repo.create(user)
@@ -89,7 +89,7 @@ class AuthService:
         """Exchange refresh token for new access token"""
         db_token = self.verify_refresh_token(refresh_token)
         if not db_token:
-            raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+            raise HTTPException(status_code=401, detail="Token penyegaran tidak valid atau kadaluarasa")
             
         user = db_token.user
         identifier = user.username or user.nik

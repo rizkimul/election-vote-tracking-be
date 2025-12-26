@@ -9,17 +9,17 @@ T = TypeVar('T')
 def validate_nik(v: str) -> str:
     """Validate NIK (16 digits) - only for traditional NIK"""
     if not re.match(r'^\d{16}$', v):
-        raise ValueError('NIK must be 16 digits')
+        raise ValueError('NIK harus 16 digit')
     return v
 
 def validate_nik_or_nis(v: str, identifier_type: str = "NIK") -> str:
     """Flexible validation for NIK or NIS (education ID)"""
     if identifier_type == "NIK":
         if not re.match(r'^\d{16}$', v):
-            raise ValueError('NIK must be 16 digits')
+            raise ValueError('NIK harus 16 digit')
     else:  # NIS
         if not re.match(r'^\d{1,20}$', v):
-            raise ValueError('NIS must be numeric (1-20 digits)')
+            raise ValueError('NIS harus berupa angka (1-20 digit)')
     return v
 
 # --- Auth ---
@@ -121,10 +121,10 @@ class AttendeeCreate(BaseModel):
     name: str
     kecamatan: Optional[str] = None
     desa: Optional[str] = None
-    alamat: Optional[str] = None  # Combined address
-    jenis_kelamin: Optional[str] = None  # "L" or "P"
-    pekerjaan: Optional[str] = None  # Occupation
-    usia: Optional[int] = None  # Age in years
+    alamat: str  # Combined address
+    jenis_kelamin: str  # "L" or "P"
+    pekerjaan: str  # Occupation
+    usia: int  # Age in years
     # Legacy fields (kept for backward compatibility)
     kampung: Optional[str] = None
     rt_rw: Optional[str] = None

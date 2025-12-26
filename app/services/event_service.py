@@ -56,7 +56,7 @@ class EventService:
         # Check if user already attended this event (Unique constraint handle or check)
         existing = self.attendee_repo.get_by_event_and_nik(data.event_id, data.nik)
         if existing:
-            raise HTTPException(status_code=400, detail="NIK already registered for this event")
+            raise HTTPException(status_code=400, detail="NIK sudah terdaftar untuk kegiatan ini")
         
         # If not force_add, check for duplicates across other events
         if not force_add:
@@ -74,11 +74,11 @@ class EventService:
         # Check capacity
         event = self.event_repo.db.query(models.Event).get(data.event_id)
         if not event:
-            raise HTTPException(status_code=404, detail="Event not found")
+            raise HTTPException(status_code=404, detail="Kegiatan tidak ditemukan")
         
         current_count = self.attendee_repo.count_by_event(data.event_id)
         if event.activity_type and current_count >= event.activity_type.max_participants:
-             raise HTTPException(status_code=400, detail="Event capacity reached")
+             raise HTTPException(status_code=400, detail="Kapasitas kegiatan penuh")
 
         obj = models.Attendee(**data.dict())
         return self.attendee_repo.create(obj)

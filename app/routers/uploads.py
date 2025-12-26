@@ -10,7 +10,7 @@ router = APIRouter(prefix="/upload", tags=["upload"])
 async def upload_votes_excel(file: UploadFile, svc = Depends(get_historical_vote_service)):
     try:
         if not file.filename.endswith((".xls", ".xlsx")):
-            raise HTTPException(status_code=400, detail="Must be an Excel file (.xls or .xlsx)")
+            raise HTTPException(status_code=400, detail="Harus berupa file Excel (.xls atau .xlsx)")
 
         contents = await file.read()
         svc.import_votes_from_file(contents, filename=file.filename)
@@ -28,7 +28,7 @@ async def upload_votes_excel(file: UploadFile, svc = Depends(get_historical_vote
             status_code=500,
             content={
                 "status": 500,
-                "message": str(e) if e else "Internal Server Error"
+                "message": str(e) if e else "Terjadi kesalahan internal server"
             }
         )
 

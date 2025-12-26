@@ -24,7 +24,7 @@ def register(user: UserCreate, auth_svc=Depends(get_auth_service)):
             status_code=500,
             content={
                 "status": 500,
-                "message": str(e) if e else "Internal server error",
+                "message": str(e) if e else "Terjadi kesalahan internal server",
             }
         )
 
@@ -45,7 +45,7 @@ def update_profile(data: UserUpdate, current_user: User = Depends(get_current_us
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"status": 500, "message": str(e) if e else "Internal server error"}
+            content={"status": 500, "message": str(e) if e else "Terjadi kesalahan internal server"}
         )
 
 @router.put("/me/password")
@@ -61,7 +61,7 @@ def change_password(data: PasswordChange, current_user: User = Depends(get_curre
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"status": 500, "message": str(e) if e else "Internal server error"}
+            content={"status": 500, "message": str(e) if e else "Terjadi kesalahan internal server"}
         )
 
 @router.post("/login")
@@ -70,7 +70,7 @@ def login(payload: LoginSchema, auth_svc=Depends(get_auth_service)):
             
         user = auth_svc.authenticate(payload.username, payload.password)
         if not user:
-            raise HTTPException(status_code=400, detail="Invalid credentials")
+            raise HTTPException(status_code=400, detail="Kredensial tidak valid")
         # Use username as the token identifier, fallback to NIK for legacy users
         identifier = user.username or user.nik
         token = auth_svc.create_token(identifier, user.id)
@@ -88,7 +88,7 @@ def login(payload: LoginSchema, auth_svc=Depends(get_auth_service)):
             status_code=500,
             content={
                 "status": 500,
-                "message": str(e) if e else "Internal server error",
+                "message": str(e) if e else "Terjadi kesalahan internal server",
             }
         )
 
@@ -104,18 +104,18 @@ def refresh_token(payload: RefreshTokenSchema, auth_svc=Depends(get_auth_service
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"status": 500, "message": str(e) if e else "Internal server error"}
+            content={"status": 500, "message": str(e) if e else "Terjadi kesalahan internal server"}
         )
 
 @router.post("/logout")
 def logout(payload: RefreshTokenSchema, auth_svc=Depends(get_auth_service)):
     try:
         auth_svc.revoke_refresh_token(payload.refresh_token)
-        return {"message": "Logged out successfully"}
+        return {"message": "Berhasil keluar"}
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"status": 500, "message": str(e) if e else "Internal server error"}
+            content={"status": 500, "message": str(e) if e else "Terjadi kesalahan internal server"}
         )
 
 
