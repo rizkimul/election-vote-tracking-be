@@ -19,8 +19,23 @@ class EventRepository:
                       dapil: Optional[str] = None,
                       date_from: Optional[date] = None,
                       date_to: Optional[date] = None,
-                      activity_type_id: Optional[int] = None):
+                      activity_type_id: Optional[int] = None,
+                      search: Optional[str] = None):
         q = self.db.query(models.Event)
+
+        if search:
+            from sqlalchemy import or_
+            q = q.outerjoin(models.ActivityType)
+            search_pattern = f"%{search}%"
+            q = q.filter(
+                or_(
+                    models.ActivityType.name.ilike(search_pattern),
+                    models.Event.dapil.ilike(search_pattern),
+                    models.Event.kecamatan.ilike(search_pattern),
+                    models.Event.desa.ilike(search_pattern)
+                )
+            )
+
         if dapil:
             q = q.filter(models.Event.dapil == dapil)
         if activity_type_id:
