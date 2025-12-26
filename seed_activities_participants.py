@@ -446,31 +446,38 @@ KECAMATAN_DATA = [
   }
 ]
 
-def seed_data():
+def seed_data(force=False):
     db = SessionLocal()
     try:
         print("Starting seed process...")
         
-        # 1. Get or Create ActivityType
-        # Try to find a generic one or create one
-        activity_type_name = "Sosialisasi Warga"
-        activity_type = db.query(ActivityType).filter(ActivityType.name == activity_type_name).first()
+        # Idempotency check: Skip if already seeded
+        existing_event_count = db.query(Event).count()
+        SEED_THRESHOLD = 60  # We expect at least 62 events from seeding
         
-        if not activity_type:
-            print(f"Creating ActivityType: {activity_type_name}")
-            activity_type = ActivityType(
-                name=activity_type_name,
-                max_participants=500
-            )
-            db.add(activity_type)
-            db.commit()
-            db.refresh(activity_type)
-        else:
-            print(f"Using existing ActivityType: {activity_type.name}")
+        if existing_event_count >= SEED_THRESHOLD and not force:
+            print(f"\n⚠️  Database already contains {existing_event_count} events.")
+            print("   Seeding skipped to prevent duplicate data.")
+            print("   To force re-seeding, run with --force flag:")
+            print("   python3 seed_activities_participants.py --force")
+            return
+        
+        # 1. Get ALL existing ActivityTypes from the database
+        all_activity_types = db.query(ActivityType).all()
+        
+        if not all_activity_types:
+            print("No Activity Types found in the database. Please create some first.")
+            return
+        
+        print(f"Found {len(all_activity_types)} Activity Types:")
+        for at in all_activity_types:
+            print(f"  - {at.id}: {at.name}")
 
         # 2. Iterate through Kecamatan
         total_activities = 0
         total_attendees = 0
+        activity_type_index = 0  # To rotate through activity types
+
         
         for kec in KECAMATAN_DATA:
             kec_name = kec['name']
@@ -479,13 +486,17 @@ def seed_data():
             
             print(f"Processing Kecamatan: {kec_name}")
             
-            # Create 2 Activities per Kecamatan
+            # Create 2 Activities per Kecamatan, using different activity types
             for i in range(2):
+                # Round-robin through all activity types
+                activity_type = all_activity_types[activity_type_index % len(all_activity_types)]
+                activity_type_index += 1
+                
                 # Randomly select a village for the event location
                 village_obj = random.choice(villages)
                 village_name = village_obj['name']
                 
-                # Random date within last year or next year
+                # Random date within last 6 months to next month
                 event_date = fake.date_between(start_date='-6m', end_date='+1m')
                 
                 # Create Event
@@ -555,6 +566,12 @@ def seed_data():
         print(f"\nSeeding Complete!")
         print(f"Total Activities Created: {total_activities}")
         print(f"Total Participants Created: {total_attendees}")
+        
+        # Print summary per activity type
+        print("\n=== Events per Activity Type ===")
+        for at in all_activity_types:
+            count = db.query(Event).filter(Event.activity_type_id == at.id).count()
+            print(f"  {at.name}: {count} events")
 
     except Exception as e:
         print(f"Critical Error during seeding: {e}")
@@ -563,4 +580,8 @@ def seed_data():
         db.close()
 
 if __name__ == "__main__":
-    seed_data()
+    import argparse
+    parser = argparse.ArgumentParser(description='Seed activity and participant data')
+    parser.add_argument('--force', action='store_true', help='Force re-seeding even if data exists')
+    args = parser.parse_args()
+    seed_data(force=args.force)
