@@ -451,21 +451,26 @@ def seed_data():
     try:
         print("Starting seed process...")
         
-        # 1. Get ALL existing ActivityTypes from the database
-        all_activity_types = db.query(ActivityType).all()
+        # 1. Get or Create ActivityType
+        # Try to find a generic one or create one
+        activity_type_name = "Sosialisasi Warga"
+        activity_type = db.query(ActivityType).filter(ActivityType.name == activity_type_name).first()
         
-        if not all_activity_types:
-            print("No Activity Types found in the database. Please create some first.")
-            return
-        
-        print(f"Found {len(all_activity_types)} Activity Types:")
-        for at in all_activity_types:
-            print(f"  - {at.id}: {at.name}")
+        if not activity_type:
+            print(f"Creating ActivityType: {activity_type_name}")
+            activity_type = ActivityType(
+                name=activity_type_name,
+                max_participants=500
+            )
+            db.add(activity_type)
+            db.commit()
+            db.refresh(activity_type)
+        else:
+            print(f"Using existing ActivityType: {activity_type.name}")
 
         # 2. Iterate through Kecamatan
         total_activities = 0
         total_attendees = 0
-        activity_type_index = 0  # To rotate through activity types
         
         for kec in KECAMATAN_DATA:
             kec_name = kec['name']
@@ -474,17 +479,13 @@ def seed_data():
             
             print(f"Processing Kecamatan: {kec_name}")
             
-            # Create 2 Activities per Kecamatan, using different activity types
+            # Create 2 Activities per Kecamatan
             for i in range(2):
-                # Round-robin through all activity types
-                activity_type = all_activity_types[activity_type_index % len(all_activity_types)]
-                activity_type_index += 1
-                
                 # Randomly select a village for the event location
                 village_obj = random.choice(villages)
                 village_name = village_obj['name']
                 
-                # Random date within last 6 months to next month
+                # Random date within last year or next year
                 event_date = fake.date_between(start_date='-6m', end_date='+1m')
                 
                 # Create Event
@@ -554,12 +555,6 @@ def seed_data():
         print(f"\nSeeding Complete!")
         print(f"Total Activities Created: {total_activities}")
         print(f"Total Participants Created: {total_attendees}")
-        
-        # Print summary per activity type
-        print("\n=== Events per Activity Type ===")
-        for at in all_activity_types:
-            count = db.query(Event).filter(Event.activity_type_id == at.id).count()
-            print(f"  {at.name}: {count} events")
 
     except Exception as e:
         print(f"Critical Error during seeding: {e}")
@@ -569,4 +564,3 @@ def seed_data():
 
 if __name__ == "__main__":
     seed_data()
-
