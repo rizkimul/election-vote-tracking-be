@@ -112,6 +112,7 @@ class EventListResponse(BaseModel):
     total: int
     page: int
     size: int
+    pages: int  # Total number of pages
 
 # --- Attendee ---
 class AttendeeCreate(BaseModel):

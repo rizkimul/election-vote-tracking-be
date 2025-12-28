@@ -23,8 +23,8 @@ class EventService:
     def list_events(self, page=1, size=20, **kwargs):
         offset = (page - 1) * size
         items, total = self.event_repo.list_filtered(offset=offset, limit=size, **kwargs)
-        items, total = self.event_repo.list_filtered(offset=offset, limit=size, **kwargs)
-        return {"items": items, "total": total, "page": page, "size": size}
+        pages = (total + size - 1) // size  # Ceiling division
+        return {"items": items, "total": total, "page": page, "size": size, "pages": pages}
 
     def get_event(self, event_id: int):
         event = self.event_repo.get(event_id)
