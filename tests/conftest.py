@@ -62,3 +62,80 @@ def test_user(db_session):
     db_session.commit()
     db_session.refresh(user)
     return user
+
+@pytest.fixture
+def auth_headers(client, test_user):
+    """Get auth headers from logged in test user."""
+    response = client.post("/auth/login", json={
+        "username": "testuser",
+        "password": "password123"
+    })
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+@pytest.fixture
+def activity_type(db_session):
+    """Create a test activity type."""
+    from app.models import ActivityType
+    at = ActivityType(name="Test Activity", max_participants=50)
+    db_session.add(at)
+    db_session.commit()
+    db_session.refresh(at)
+    return at
+
+@pytest.fixture
+def event(db_session, activity_type):
+    """Create a test event."""
+    from app.models import Event
+    from datetime import date
+    e = Event(
+        activity_type_id=activity_type.id,
+        kecamatan="Dayeuhkolot",
+        desa="Cangkuang Kulon",
+        dapil="1",
+        date=date(2024, 12, 1),
+        target_participants=30
+    )
+    db_session.add(e)
+    db_session.commit()
+    db_session.refresh(e)
+    return e
+
+@pytest.fixture
+def attendee(db_session, event):
+    """Create a test attendee."""
+    from app.models import Attendee
+    a = Attendee(
+        event_id=event.id,
+        nik="1234567890123456",
+        identifier_type="NIK",
+        name="Test Attendee",
+        kecamatan="Dayeuhkolot",
+        desa="Cangkuang Kulon",
+        alamat="Jl. Test No. 1",
+        jenis_kelamin="L",
+        pekerjaan="Wiraswasta",
+        usia=30
+    )
+    db_session.add(a)
+    db_session.commit()
+    db_session.refresh(a)
+    return a
+
+@pytest.fixture
+def historical_vote(db_session):
+    """Create a test historical vote."""
+    from app.models import HistoricalVote
+    hv = HistoricalVote(
+        dapil="Dapil 1",
+        kabupaten="Kabupaten Bandung",
+        kecamatan="Dayeuhkolot",
+        desa="Cangkuang Kulon",
+        election_year=2024,
+        data={"PDIP": 100, "Golkar": 50},
+        total_votes=150
+    )
+    db_session.add(hv)
+    db_session.commit()
+    db_session.refresh(hv)
+    return hv
