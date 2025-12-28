@@ -20,38 +20,46 @@ fake = Faker('id_ID')
 KECAMATAN_DATA = [
   {
     "name": 'ARJASARI',
-    "dapil": 'JABAR 2-1',
+    "dapil": 'DAPIL 7',
     "villages": [
+      { "name": 'Ancolmekar', "type": 'Desa' },
       { "name": 'Arjasari', "type": 'Desa' },
       { "name": 'Baros', "type": 'Desa' },
+      { "name": 'Batukarut', "type": 'Desa' },
       { "name": 'Lebakwangi', "type": 'Desa' },
+      { "name": 'Mangunjaya', "type": 'Desa' },
       { "name": 'Mekarjaya', "type": 'Desa' },
+      { "name": 'Patrolsari', "type": 'Desa' },
       { "name": 'Pinggirsari', "type": 'Desa' },
       { "name": 'Rancakole', "type": 'Desa' },
+      { "name": 'Wargaluyu', "type": 'Desa' },
     ]
   },
   {
     "name": 'BALEENDAH',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 6',
     "villages": [
-      { "name": 'Andir', "type": 'Desa' },
-      { "name": 'Baleendah', "type": 'Desa' },
-      { "name": 'Jelekong', "type": 'Desa' },
-      { "name": 'Manggahang', "type": 'Desa' },
+      { "name": 'Andir', "type": 'Kelurahan' },
+      { "name": 'Baleendah', "type": 'Kelurahan' },
+      { "name": 'Bojongmalaka', "type": 'Desa' },
+      { "name": 'Jelekong', "type": 'Kelurahan' },
       { "name": 'Malakasari', "type": 'Desa' },
+      { "name": 'Manggahang', "type": 'Kelurahan' },
       { "name": 'Rancamanyar', "type": 'Desa' },
-      { "name": 'Wargamekar', "type": 'Desa' },
+      { "name": 'Wargamekar', "type": 'Kelurahan' },
     ]
   },
   {
     "name": 'BANJARAN',
-    "dapil": 'JABAR 2-1',
+    "dapil": 'DAPIL 7',
     "villages": [
-      { "name": 'Banjaran', "type": 'Kelurahan' },
+      { "name": 'Banjaran', "type": 'Desa' },
       { "name": 'Banjaran Wetan', "type": 'Desa' },
       { "name": 'Ciapus', "type": 'Desa' },
       { "name": 'Ciherang', "type": 'Desa' },
       { "name": 'Kamasan', "type": 'Desa' },
+      { "name": 'Kiangroke', "type": 'Desa' },
+      { "name": 'Margahurip', "type": 'Desa' },
       { "name": 'Mekarjaya', "type": 'Desa' },
       { "name": 'Neglasari', "type": 'Desa' },
       { "name": 'Pasirmulya', "type": 'Desa' },
@@ -61,8 +69,9 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'BOJONGSOANG',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 3',
     "villages": [
+      { "name": 'Bojongsari', "type": 'Desa' },
       { "name": 'Bojongsoang', "type": 'Desa' },
       { "name": 'Buahbatu', "type": 'Desa' },
       { "name": 'Cipagalo', "type": 'Desa' },
@@ -72,20 +81,20 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'CANGKUANG',
-    "dapil": 'JABAR 2-1',
+    "dapil": 'DAPIL 1',
     "villages": [
       { "name": 'Bandasari', "type": 'Desa' },
+      { "name": 'Cangkuang', "type": 'Desa' },
       { "name": 'Ciluncat', "type": 'Desa' },
-      { "name": 'Cingcin', "type": 'Desa' },
       { "name": 'Jatisari', "type": 'Desa' },
       { "name": 'Nagrak', "type": 'Desa' },
-      { "name": 'Panundaan', "type": 'Desa' },
+      { "name": 'Pananjung', "type": 'Desa' },
       { "name": 'Tanjungsari', "type": 'Desa' },
     ]
   },
   {
     "name": 'CICALENGKA',
-    "dapil": 'JABAR 2-5',
+    "dapil": 'DAPIL 4',
     "villages": [
       { "name": 'Babakan Peuteuy', "type": 'Desa' },
       { "name": 'Cicalengka Kulon', "type": 'Desa' },
@@ -93,15 +102,17 @@ KECAMATAN_DATA = [
       { "name": 'Cikuya', "type": 'Desa' },
       { "name": 'Dampit', "type": 'Desa' },
       { "name": 'Margaasih', "type": 'Desa' },
+      { "name": 'Nagrog', "type": 'Desa' },
       { "name": 'Narawita', "type": 'Desa' },
       { "name": 'Panenjoan', "type": 'Desa' },
       { "name": 'Tanjungwangi', "type": 'Desa' },
+      { "name": 'Tenjolaya', "type": 'Desa' },
       { "name": 'Waluya', "type": 'Desa' },
     ]
   },
   {
     "name": 'CIKANCUNG',
-    "dapil": 'JABAR 2-5',
+    "dapil": 'DAPIL 4',
     "villages": [
       { "name": 'Cihanyir', "type": 'Desa' },
       { "name": 'Cikancung', "type": 'Desa' },
@@ -111,15 +122,16 @@ KECAMATAN_DATA = [
       { "name": 'Mandalasari', "type": 'Desa' },
       { "name": 'Mekarlaksana', "type": 'Desa' },
       { "name": 'Srirahayu', "type": 'Desa' },
-      { "name": 'Tanjungmekar', "type": 'Desa' },
+      { "name": 'Tanjunglaya', "type": 'Desa' },
     ]
   },
   {
     "name": 'CILENGKRANG',
-    "dapil": 'JABAR 2-4',
+    "dapil": 'DAPIL 3',
     "villages": [
       { "name": 'Cilengkrang', "type": 'Desa' },
       { "name": 'Cipanjalu', "type": 'Desa' },
+      { "name": 'Ciporeat', "type": 'Desa' },
       { "name": 'Girimekar', "type": 'Desa' },
       { "name": 'Jatiendah', "type": 'Desa' },
       { "name": 'Melatiwangi', "type": 'Desa' },
@@ -127,66 +139,72 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'CILEUNYI',
-    "dapil": 'JABAR 2-4',
+    "dapil": 'DAPIL 3',
     "villages": [
       { "name": 'Cibiru Hilir', "type": 'Desa' },
       { "name": 'Cibiru Wetan', "type": 'Desa' },
       { "name": 'Cileunyi Kulon', "type": 'Desa' },
       { "name": 'Cileunyi Wetan', "type": 'Desa' },
       { "name": 'Cimekar', "type": 'Desa' },
-      { "name": 'Cinunuk', "type": 'Kelurahan' },
+      { "name": 'Cinunuk', "type": 'Desa' },
     ]
   },
   {
     "name": 'CIMAUNG',
-    "dapil": 'JABAR 2-1',
+    "dapil": 'DAPIL 7',
     "villages": [
+      { "name": 'Campakamulya', "type": 'Desa' },
       { "name": 'Cikalong', "type": 'Desa' },
       { "name": 'Cimaung', "type": 'Desa' },
       { "name": 'Cipinang', "type": 'Desa' },
       { "name": 'Jagabaya', "type": 'Desa' },
+      { "name": 'Malasari', "type": 'Desa' },
       { "name": 'Mekarsari', "type": 'Desa' },
       { "name": 'Pasirhuni', "type": 'Desa' },
       { "name": 'Sukamaju', "type": 'Desa' },
+      { "name": 'Warjabakti', "type": 'Desa' },
     ]
   },
   {
     "name": 'CIMENYAN',
-    "dapil": 'JABAR 2-4',
+    "dapil": 'DAPIL 3',
     "villages": [
-      { "name": 'Cibeunying', "type": 'Desa' },
+      { "name": 'Cibeunying', "type": 'Kelurahan' },
       { "name": 'Ciburial', "type": 'Desa' },
+      { "name": 'Cikadut', "type": 'Desa' },
       { "name": 'Cimenyan', "type": 'Desa' },
       { "name": 'Mandalamekar', "type": 'Desa' },
       { "name": 'Mekarmanik', "type": 'Desa' },
       { "name": 'Mekarsaluyu', "type": 'Desa' },
-      { "name": 'Padasuka', "type": 'Desa' },
-      { "name": 'Sindangmanik', "type": 'Desa' },
+      { "name": 'Padasuka', "type": 'Kelurahan' },
+      { "name": 'Sindanglaya', "type": 'Desa' },
     ]
   },
   {
     "name": 'CIPARAY',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 6',
     "villages": [
+      { "name": 'Babakan', "type": 'Desa' },
       { "name": 'Bumiwangi', "type": 'Desa' },
-      { "name": 'Ciherang', "type": 'Desa' },
+      { "name": 'Ciheulang', "type": 'Desa' },
       { "name": 'Cikoneng', "type": 'Desa' },
-      { "name": 'Ciparay', "type": 'Kelurahan' },
+      { "name": 'Ciparay', "type": 'Desa' },
       { "name": 'Gunungleutik', "type": 'Desa' },
+      { "name": 'Manggungharja', "type": 'Desa' },
       { "name": 'Mekarlaksana', "type": 'Desa' },
       { "name": 'Mekarsari', "type": 'Desa' },
       { "name": 'Pakutandang', "type": 'Desa' },
+      { "name": 'Sagaracipta', "type": 'Desa' },
       { "name": 'Sarimahi', "type": 'Desa' },
       { "name": 'Serangmekar', "type": 'Desa' },
       { "name": 'Sumbersari', "type": 'Desa' },
-      { "name": 'Tegalwaru', "type": 'Desa' },
     ]
   },
   {
     "name": 'CIWIDEY',
-    "dapil": 'JABAR 2-6',
+    "dapil": 'DAPIL 1',
     "villages": [
-      { "name": 'Ciwidey', "type": 'Kelurahan' },
+      { "name": 'Ciwidey', "type": 'Desa' },
       { "name": 'Lebakmuncang', "type": 'Desa' },
       { "name": 'Nengkelan', "type": 'Desa' },
       { "name": 'Panundaan', "type": 'Desa' },
@@ -197,53 +215,56 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'DAYEUHKOLOT',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 2',
     "villages": [
-      { "name": 'Bojongemas', "type": 'Kelurahan' },
       { "name": 'Cangkuang Kulon', "type": 'Desa' },
       { "name": 'Cangkuang Wetan', "type": 'Desa' },
       { "name": 'Citeureup', "type": 'Desa' },
-      { "name": 'Dayeuhkolot', "type": 'Kelurahan' },
-      { "name": 'Sukaasih', "type": 'Desa' },
+      { "name": 'Dayeuhkolot', "type": 'Desa' },
+      { "name": 'Pasawahan', "type": 'Kelurahan' },
+      { "name": 'Sukapura', "type": 'Desa' },
     ]
   },
   {
     "name": 'IBUN',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 5',
     "villages": [
+      { "name": 'Cibeet', "type": 'Desa' },
       { "name": 'Dukuh', "type": 'Desa' },
       { "name": 'Ibun', "type": 'Desa' },
       { "name": 'Karyalaksana', "type": 'Desa' },
-      { "name": 'Lampegan', "type": 'Desa' },
       { "name": 'Laksana', "type": 'Desa' },
+      { "name": 'Lampegan', "type": 'Desa' },
       { "name": 'Mekarwangi', "type": 'Desa' },
       { "name": 'Neglasari', "type": 'Desa' },
       { "name": 'Pangguh', "type": 'Desa' },
       { "name": 'Sudi', "type": 'Desa' },
       { "name": 'Talun', "type": 'Desa' },
-      { "name": 'Tangsimekar', "type": 'Desa' },
+      { "name": 'Tanggulun', "type": 'Desa' },
     ]
   },
   {
     "name": 'KATAPANG',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 2',
     "villages": [
+      { "name": 'Banyusari', "type": 'Desa' },
       { "name": 'Cilampeni', "type": 'Desa' },
       { "name": 'Gandasari', "type": 'Desa' },
       { "name": 'Katapang', "type": 'Desa' },
       { "name": 'Pangauban', "type": 'Desa' },
-      { "name": 'Parungserab', "type": 'Desa' },
       { "name": 'Sangkanhurip', "type": 'Desa' },
       { "name": 'Sukamukti', "type": 'Desa' },
     ]
   },
   {
     "name": 'KERTASARI',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 6',
     "villages": [
-      { "name": 'Ciberem', "type": 'Desa' },
+      { "name": 'Cibeureum', "type": 'Desa' },
       { "name": 'Cihawuk', "type": 'Desa' },
+      { "name": 'Cikembang', "type": 'Desa' },
       { "name": 'Neglawangi', "type": 'Desa' },
+      { "name": 'Resmitingal', "type": 'Desa' },
       { "name": 'Santosa', "type": 'Desa' },
       { "name": 'Sukapura', "type": 'Desa' },
       { "name": 'Tarumajaya', "type": 'Desa' },
@@ -251,27 +272,29 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'KUTAWARINGIN',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 1',
     "villages": [
       { "name": 'Buninagara', "type": 'Desa' },
+      { "name": 'Cibodas', "type": 'Desa' },
       { "name": 'Cilame', "type": 'Desa' },
       { "name": 'Gajahmekar', "type": 'Desa' },
       { "name": 'Jatisari', "type": 'Desa' },
+      { "name": 'Jelegong', "type": 'Desa' },
       { "name": 'Kopo', "type": 'Desa' },
       { "name": 'Kutawaringin', "type": 'Desa' },
       { "name": 'Padasuka', "type": 'Desa' },
-      { "name": 'Pameuntingan', "type": 'Desa' },
-      { "name": 'Patrapan', "type": 'Desa' },
+      { "name": 'Pameuntasan', "type": 'Desa' },
+      { "name": 'Sukamulya', "type": 'Desa' },
     ]
   },
   {
     "name": 'MAJALAYA',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 5',
     "villages": [
-      { "name": 'Bojong', "type": 'Desa' },
       { "name": 'Biru', "type": 'Desa' },
+      { "name": 'Bojong', "type": 'Desa' },
       { "name": 'Majakerta', "type": 'Desa' },
-      { "name": 'Majalaya', "type": 'Kelurahan' },
+      { "name": 'Majalaya', "type": 'Desa' },
       { "name": 'Majasetra', "type": 'Desa' },
       { "name": 'Neglasari', "type": 'Desa' },
       { "name": 'Padaulun', "type": 'Desa' },
@@ -283,48 +306,53 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'MARGAASIH',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 2',
     "villages": [
+      { "name": 'Cigondewah Hilir', "type": 'Desa' },
       { "name": 'Lagadar', "type": 'Desa' },
       { "name": 'Margaasih', "type": 'Desa' },
-      { "name": 'Mekarrahayu', "type": 'Desa' },
+      { "name": 'Mekar Rahayu', "type": 'Desa' },
       { "name": 'Nanjung', "type": 'Desa' },
       { "name": 'Rahayu', "type": 'Desa' },
-      { "name": 'Sayati', "type": 'Desa' },
     ]
   },
   {
     "name": 'MARGAHAYU',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 2',
     "villages": [
-      { "name": 'Margahayu Selatan', "type": 'Kelurahan' },
+      { "name": 'Margahayu Selatan', "type": 'Desa' },
       { "name": 'Margahayu Tengah', "type": 'Desa' },
       { "name": 'Sayati', "type": 'Desa' },
       { "name": 'Sukamenak', "type": 'Desa' },
-      { "name": 'Sulaeman', "type": 'Desa' },
+      { "name": 'Sulaeman', "type": 'Kelurahan' },
     ]
   },
   {
     "name": 'NAGREG',
-    "dapil": 'JABAR 2-5',
+    "dapil": 'DAPIL 2',
     "villages": [
       { "name": 'Bojong', "type": 'Desa' },
       { "name": 'Ciaro', "type": 'Desa' },
       { "name": 'Ciherang', "type": 'Desa' },
+      { "name": 'Citaman', "type": 'Desa' },
+      { "name": 'Ganjarsabar', "type": 'Desa' },
       { "name": 'Mandalawangi', "type": 'Desa' },
-      { "name": 'Nagrek', "type": 'Desa' },
+      { "name": 'Nagreg', "type": 'Desa' },
       { "name": 'Nagreg Kendan', "type": 'Desa' },
     ]
   },
   {
     "name": 'PACET',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 6',
     "villages": [
+      { "name": 'Cikawao', "type": 'Desa' },
+      { "name": 'Cikitu', "type": 'Desa' },
       { "name": 'Cinanggela', "type": 'Desa' },
-      { "name": 'Cirapuan', "type": 'Desa' },
-      { "name": 'Mangunharja', "type": 'Desa' },
+      { "name": 'Cipeujeuh', "type": 'Desa' },
+      { "name": 'Girimulya', "type": 'Desa' },
+      { "name": 'Mandalahaji', "type": 'Desa' },
       { "name": 'Maruyung', "type": 'Desa' },
-      { "name": 'Mekar', "type": 'Desa' },
+      { "name": 'Mekarjaya', "type": 'Desa' },
       { "name": 'Mekarsari', "type": 'Desa' },
       { "name": 'Nagrak', "type": 'Desa' },
       { "name": 'Pangauban', "type": 'Desa' },
@@ -334,23 +362,27 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'PAMEUNGPEUK',
-    "dapil": 'JABAR 2-2',
+    "dapil": 'DAPIL 7',
     "villages": [
       { "name": 'Bojongkunci', "type": 'Desa' },
+      { "name": 'Bojongmanggu', "type": 'Desa' },
       { "name": 'Langonsari', "type": 'Desa' },
-      { "name": 'Pameungpeuk', "type": 'Desa' },
+      { "name": 'Rancamulya', "type": 'Desa' },
       { "name": 'Rancatungku', "type": 'Desa' },
+      { "name": 'Sukasari', "type": 'Desa' },
     ]
   },
   {
     "name": 'PANGALENGAN',
-    "dapil": 'JABAR 2-6',
+    "dapil": 'DAPIL 7',
     "villages": [
+      { "name": 'Banjarsari', "type": 'Desa' },
       { "name": 'Lamajang', "type": 'Desa' },
-      { "name": 'Margamukti', "type": 'Desa' },
+      { "name": 'Margaluyu', "type": 'Desa' },
       { "name": 'Margamekar', "type": 'Desa' },
+      { "name": 'Margamukti', "type": 'Desa' },
       { "name": 'Margamulya', "type": 'Desa' },
-      { "name": 'Pangalengan', "type": 'Kelurahan' },
+      { "name": 'Pangalengan', "type": 'Desa' },
       { "name": 'Pulosari', "type": 'Desa' },
       { "name": 'Sukaluyu', "type": 'Desa' },
       { "name": 'Sukamanah', "type": 'Desa' },
@@ -361,24 +393,31 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'PASEH',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 5',
     "villages": [
+      { "name": 'Cigentur', "type": 'Desa' },
+      { "name": 'Cijagra', "type": 'Desa' },
       { "name": 'Cipaku', "type": 'Desa' },
-      { "name": 'Ciramea', "type": 'Desa' },
+      { "name": 'Cipedes', "type": 'Desa' },
+      { "name": 'Drawati', "type": 'Desa' },
       { "name": 'Karangtunggal', "type": 'Desa' },
-      { "name": 'Mekarsari', "type": 'Desa' },
-      { "name": 'Paseh', "type": 'Desa' },
-      { "name": 'Sindangsari Al Hidayah', "type": 'Desa' },
+      { "name": 'Loa', "type": 'Desa' },
+      { "name": 'Mekarpawitan', "type": 'Desa' },
+      { "name": 'Sindangsari', "type": 'Desa' },
       { "name": 'Sukamanah', "type": 'Desa' },
-      { "name": 'Tangsungsari', "type": 'Desa' },
+      { "name": 'Sukamantri', "type": 'Desa' },
+      { "name": 'Tangsimekar', "type": 'Desa' },
     ]
   },
   {
     "name": 'PASIRJAMBU',
-    "dapil": 'JABAR 2-6',
+    "dapil": 'DAPIL 1',
     "villages": [
       { "name": 'Cibodas', "type": 'Desa' },
+      { "name": 'Cikoneng', "type": 'Desa' },
+      { "name": 'Cisondari', "type": 'Desa' },
       { "name": 'Cukanggenteng', "type": 'Desa' },
+      { "name": 'Margamulya', "type": 'Desa' },
       { "name": 'Mekarmaju', "type": 'Desa' },
       { "name": 'Mekarsari', "type": 'Desa' },
       { "name": 'Pasirjambu', "type": 'Desa' },
@@ -388,7 +427,7 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'RANCABALI',
-    "dapil": 'JABAR 2-6',
+    "dapil": 'DAPIL 1',
     "villages": [
       { "name": 'Alamendah', "type": 'Desa' },
       { "name": 'Cipelah', "type": 'Desa' },
@@ -399,48 +438,50 @@ KECAMATAN_DATA = [
   },
   {
     "name": 'RANCAEKEK',
-    "dapil": 'JABAR 2-4',
+    "dapil": 'DAPIL 4',
     "villages": [
       { "name": 'Bojongloa', "type": 'Desa' },
       { "name": 'Bojongsalam', "type": 'Desa' },
+      { "name": 'Cangkuang', "type": 'Desa' },
+      { "name": 'Haurpugur', "type": 'Desa' },
       { "name": 'Jelegong', "type": 'Desa' },
       { "name": 'Linggar', "type": 'Desa' },
       { "name": 'Nanjungmekar', "type": 'Desa' },
-      { "name": 'Rancaekek Kencana', "type": 'Desa' },
+      { "name": 'Rancaekek Kencana', "type": 'Kelurahan' },
       { "name": 'Rancaekek Kulon', "type": 'Desa' },
       { "name": 'Rancaekek Wetan', "type": 'Desa' },
       { "name": 'Sangiang', "type": 'Desa' },
-      { "name": 'Sukadana', "type": 'Desa' },
       { "name": 'Sukamanah', "type": 'Desa' },
+      { "name": 'Sukamulya', "type": 'Desa' },
       { "name": 'Tegalsumedang', "type": 'Desa' },
     ]
   },
   {
     "name": 'SOLOKANJERUK',
-    "dapil": 'JABAR 2-3',
+    "dapil": 'DAPIL 5',
     "villages": [
       { "name": 'Bojongemas', "type": 'Desa' },
       { "name": 'Cibodas', "type": 'Desa' },
       { "name": 'Langensari', "type": 'Desa' },
-      { "name": 'Padamulya', "type": 'Desa' },
+      { "name": 'Padamukti', "type": 'Desa' },
       { "name": 'Panyadap', "type": 'Desa' },
       { "name": 'Rancakasumba', "type": 'Desa' },
       { "name": 'Solokanjeruk', "type": 'Desa' },
-      { "name": 'Sukamulya', "type": 'Desa' },
     ]
   },
   {
     "name": 'SOREANG',
-    "dapil": 'JABAR 2-1',
+    "dapil": 'DAPIL 1',
     "villages": [
       { "name": 'Cingcin', "type": 'Desa' },
       { "name": 'Karamatmulya', "type": 'Desa' },
-      { "name": 'Parungserab', "type": 'Desa' },
-      { "name": 'Panyirapan', "type": 'Desa' },
       { "name": 'Pamekaran', "type": 'Desa' },
-      { "name": 'Soreang', "type": 'Kelurahan' },
+      { "name": 'Panyirapan', "type": 'Desa' },
+      { "name": 'Parungserab', "type": 'Desa' },
+      { "name": 'Sadu', "type": 'Desa' },
+      { "name": 'Sekarwangi', "type": 'Desa' },
+      { "name": 'Soreang', "type": 'Desa' },
       { "name": 'Sukajadi', "type": 'Desa' },
-      { "name": 'Sukasari', "type": 'Desa' },
       { "name": 'Sukanagara', "type": 'Desa' },
     ]
   }
@@ -451,28 +492,52 @@ def seed_data():
     try:
         print("Starting seed process...")
         
-        # 1. Get or Create ActivityType
-        # Try to find a generic one or create one
-        activity_type_name = "Sosialisasi Warga"
-        activity_type = db.query(ActivityType).filter(ActivityType.name == activity_type_name).first()
+        # 1. Clear Existing Data
+        print("Clearing existing data...")
+        try:
+            db.query(Attendee).delete()
+            db.query(Event).delete()
+            db.query(ActivityType).delete()
+            db.commit()
+            print("Existing data cleared.")
+        except Exception as e:
+            print(f"Error clearing data: {e}")
+            db.rollback()
+            return
+
+        # 2. Create Activity Types
+        ACTIVITY_TYPES = [
+            {"name": "Reses", "max_participants": 150},
+            {"name": "Pengawasan Penyelenggaraan Pemerintah", "max_participants": 100},
+            {"name": "Pendidikan Demokrasi", "max_participants": 50},
+            {"name": "Dialog Wakil Rakyat", "max_participants": 100},
+            {"name": "Sapa Budaya", "max_participants": 100},
+        ]
         
-        if not activity_type:
-            print(f"Creating ActivityType: {activity_type_name}")
+        activity_type_objects = []
+        for activity_data in ACTIVITY_TYPES:
+            print(f"Creating ActivityType: {activity_data['name']}")
             activity_type = ActivityType(
-                name=activity_type_name,
-                max_participants=500
+                name=activity_data['name'],
+                max_participants=activity_data['max_participants']
             )
             db.add(activity_type)
-            db.commit()
-            db.refresh(activity_type)
-        else:
-            print(f"Using existing ActivityType: {activity_type.name}")
+            activity_type_objects.append(activity_type)
+        db.commit()
+        # Refresh to get IDs
+        for at in activity_type_objects:
+            db.refresh(at)
 
-        # 2. Iterate through Kecamatan
+        # 3. Iterate through ONE random Kecamatan
         total_activities = 0
         total_attendees = 0
         
-        for kec in KECAMATAN_DATA:
+        # Select 1 random sub-district
+        selected_kec = random.choice(KECAMATAN_DATA)
+        # Wrap in a list to keep the loop structure but only process one
+        target_kecamatans = [selected_kec]
+
+        for kec in target_kecamatans:
             kec_name = kec['name']
             dapil = kec['dapil']
             villages = kec['villages']
@@ -481,6 +546,9 @@ def seed_data():
             
             # Create 2 Activities per Kecamatan
             for i in range(2):
+                # Randomly select an activity type
+                activity_type = random.choice(activity_type_objects)
+                
                 # Randomly select a village for the event location
                 village_obj = random.choice(villages)
                 village_name = village_obj['name']
@@ -510,15 +578,12 @@ def seed_data():
                 
                 # 3. Create 10 Participants per Event
                 # Correlated Data: Participants are from the same Kecamatan
-                # Mix of same village and other villages in the same kec
+                # Random villages but still in that sub-district
                 
                 attendees_to_add = []
                 for _ in range(10):
-                    # 70% chance from same village, 30% from neighbor village in same kec
-                    if random.random() < 0.7:
-                        p_village_name = village_name
-                    else:
-                        p_village_name = random.choice(villages)['name']
+                    # Random village in same kec
+                    p_village_name = random.choice(villages)['name']
                     
                     gender = random.choice(['L', 'P'])
                     age = random.randint(17, 85)
