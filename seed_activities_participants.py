@@ -528,16 +528,11 @@ def seed_data():
         for at in activity_type_objects:
             db.refresh(at)
 
-        # 3. Iterate through ONE random Kecamatan
+        # 3. Iterate through ALL Kecamatan
         total_activities = 0
         total_attendees = 0
-        
-        # Select 1 random sub-district
-        selected_kec = random.choice(KECAMATAN_DATA)
-        # Wrap in a list to keep the loop structure but only process one
-        target_kecamatans = [selected_kec]
 
-        for kec in target_kecamatans:
+        for kec in KECAMATAN_DATA:
             kec_name = kec['name']
             dapil = kec['dapil']
             villages = kec['villages']
