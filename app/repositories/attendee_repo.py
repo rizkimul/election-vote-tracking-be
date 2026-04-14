@@ -24,3 +24,9 @@ class AttendeeRepository:
 
     def count_by_event(self, event_id: int):
         return self.db.query(models.Attendee).filter(models.Attendee.event_id == event_id).count()
+
+    def get_all_by_nik(self, nik: str) -> List[models.Attendee]:
+        """Get all attendee records with the given NIK across all events"""
+        return self.db.query(models.Attendee).filter(
+            models.Attendee.nik == nik
+        ).all()

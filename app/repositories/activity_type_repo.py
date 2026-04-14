@@ -15,6 +15,9 @@ class ActivityTypeRepository:
     def get_by_id(self, id: int) -> Optional[models.ActivityType]:
         return self.db.query(models.ActivityType).filter(models.ActivityType.id == id).first()
 
+    def get(self, id: int) -> Optional[models.ActivityType]:
+        return self.get_by_id(id)
+
     def get_by_name(self, name: str):
         return self.db.query(models.ActivityType).filter(models.ActivityType.name == name).first()
 
@@ -24,4 +27,9 @@ class ActivityTypeRepository:
     def delete(self, activity_type: models.ActivityType):
         self.db.delete(activity_type)
         self.db.commit()
+
+    def update(self, activity_type: models.ActivityType):
+        self.db.commit()
+        self.db.refresh(activity_type)
+        return activity_type
 

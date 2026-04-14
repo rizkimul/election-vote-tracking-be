@@ -220,7 +220,7 @@ class HistoricalVoteService:
         
         # Check if we have 'partai' and 'suara'
         if "partai" not in df.columns or "suara" not in df.columns:
-            raise ValueError("Excel must have 'partai' and 'suara' columns")
+            raise ValueError("Excel harus memiliki kolom 'partai' dan 'suara'")
 
         objects = []
         grouped = df.groupby(group_keys)

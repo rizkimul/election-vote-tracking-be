@@ -1,72 +1,98 @@
 from typing import List, Dict, Any
 from sqlalchemy import func
 from .. import models
-from ..repositories.historical_vote_repo import HistoricalVoteRepository
 from ..repositories.event_repo import EventRepository
+from ..repositories.attendee_repo import AttendeeRepository
 
 class PrioritizationService:
-    def __init__(self, vote_repo: HistoricalVoteRepository, event_repo: EventRepository):
-        self.vote_repo = vote_repo
+    def __init__(self, event_repo: EventRepository, attendee_repo: AttendeeRepository):
         self.event_repo = event_repo
+        self.attendee_repo = attendee_repo
 
     def get_suggestions(self) -> List[Dict[str, Any]]:
-        # 1. Get Votes per Kecamatan
-        votes_query = self.vote_repo.db.query(
-            models.HistoricalVote.kecamatan,
-            func.sum(models.HistoricalVote.total_votes).label('total_votes')
-        ).group_by(models.HistoricalVote.kecamatan).all()
-
-        vote_map = {row.kecamatan: row.total_votes for row in votes_query if row.kecamatan}
-
-        # 2. Get Events per Kecamatan
-        # Since location is JSON, we process in Python for simplicity in this MVP
-        # Fetching all events might be heavy in prod, but fine for MVP
-        results_tuple = self.event_repo.list_filtered(limit=5000) 
-        all_events = results_tuple[0] # list_filtered returns (items, total)
+        # 1. Get Event Counts per Kecamatan
+        events_query = self.event_repo.db.query(
+            models.Event.kecamatan,
+            func.count(models.Event.id).label('event_count')
+        ).group_by(models.Event.kecamatan).all()
         
-        event_counts = {}
-        for event in all_events:
-            # Assume location_hierarchy is dict like {"kecamatan": "Name"}
-            # In SQLite it comes out as dict if stored as JSON
-            if event.location_hierarchy and isinstance(event.location_hierarchy, dict):
-                kec = event.location_hierarchy.get("kecamatan")
-                if kec:
-                    event_counts[kec] = event_counts.get(kec, 0) + 1
+        event_map = {row.kecamatan: row.event_count for row in events_query if row.kecamatan}
+        
+        # 2. Get Attendee Counts per Kecamatan
+        attendees_query = self.attendee_repo.db.query(
+            models.Attendee.kecamatan,
+            func.count(models.Attendee.id).label('attendee_count')
+        ).group_by(models.Attendee.kecamatan).all()
+        
+        attendee_map = {row.kecamatan: row.attendee_count for row in attendees_query if row.kecamatan}
+        
+        # Combine list of all known kecamatans from both sources
+        all_kecamatans = set(event_map.keys()) | set(attendee_map.keys())
+        
+        if not all_kecamatans:
+            return []
 
-        # 3. Calculate Score
+        # 3. Calculate Dynamic Benchmarks (Averages)
+        total_events = sum(event_map.values())
+        total_attendees = sum(attendee_map.values())
+        num_districts = len(all_kecamatans)
+        
+        avg_event_count = total_events / num_districts if num_districts > 0 else 0
+        avg_attendee_count = total_attendees / num_districts if num_districts > 0 else 0
+
+        # Define Dynamic Thresholds based on plan
+        # Minim: < 50% of Average Events
+        # Over-visited: > 200% of Average Events
+        # Inefektif: Event > 50% Avg AND Attendee < 50% Avg
+        
+        threshold_minim_event = avg_event_count * 0.5
+        threshold_high_event = avg_event_count * 2.0
+        threshold_low_attendee = avg_attendee_count * 0.5
+
         results = []
-        for kecamatan, actual_votes in vote_map.items():
-            # Heuristic: Target is 30% growth from historical (or 1000 minimum)
-            target_votes = max(actual_votes * 1.3, 1000) 
-            gap = target_votes - actual_votes
+        for kecamatan in all_kecamatans:
+            event_count = event_map.get(kecamatan, 0)
+            attendee_count = attendee_map.get(kecamatan, 0)
             
-            # Ensure gap is positive for scoring
-            gap = max(0, gap)
+            score = 0
+            reason = ""
             
-            event_count = event_counts.get(kecamatan, 0)
+            # Dynamic Logic Implementation
+            if event_count < threshold_minim_event:
+                # Priority: High (Need to schedule events)
+                score = 80
+                reason = "Wilayah ini tertinggal jauh dari standar kampanye. Prioritas Utama."
             
-            # Score: High Gap + Low Events = High Score
-            # Formula: Gap * (1 / (Events + 1))
-            urgency_score = gap * (10 / (event_count + 1))
-            
+            elif event_count > threshold_high_event:
+                # Priority: High (as per old logic "Over-visited" is high score but different reason)
+                # Or maybe user wants to flag it. Keeping score high as "Important to Notice"
+                score = 90
+                reason = "Wilayah ini mendapatkan porsi kegiatan yang sangat masif (2x lipat standar)."
+                
+            elif event_count > threshold_minim_event and attendee_count < threshold_low_attendee:
+                # Ineffective: Active enough, but low turnout
+                score = 70
+                reason = "Kegiatan sering, tapi massa sedikit. Strategi acara perlu dievaluasi."
+                
+            else:
+                # Stable / Normal
+                score = 40
+                reason = "Wilayah ini berjalan on-track sesuai ritme rata-rata kampanye."
+
+            # Special case for 0 events if not caught above
+            if event_count == 0:
+                 score = 85
+                 reason = "Belum ada kegiatan sama sekali. Perlu segera dijadwalkan."
+
             results.append({
                 "kecamatan": kecamatan,
-                "score": int(urgency_score),
-                "actual_votes": actual_votes,
-                "target_votes": int(target_votes),
+                "score": score,
+                "participant_count": attendee_count,
                 "event_count": event_count,
-                "reason": self._generate_reason(gap, event_count)
+                "reason": reason,
+                # Optional: return stats for debugging if needed, but keeping schema clean for now
             })
 
         # Sort by score desc
         results.sort(key=lambda x: x["score"], reverse=True)
-        return results[:10] # Top 10 recommendations
-
-    def _generate_reason(self, gap, events):
-        if events == 0:
-            return "Belum ada kegiatan di wilayah ini"
-        if gap > 2000:
-            return "Potensi suara sangat tinggi, perlu intensifikasi"
-        if gap > 500:
-            return "Perlu penguatan basis suara"
-        return "Maintenance rutin diperlukan"
+        return results[:15]

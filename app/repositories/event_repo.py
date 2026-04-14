@@ -19,8 +19,19 @@ class EventRepository:
                       dapil: Optional[str] = None,
                       date_from: Optional[date] = None,
                       date_to: Optional[date] = None,
-                      activity_type_id: Optional[int] = None):
+                      activity_type_id: Optional[int] = None,
+                      search: Optional[str] = None):
         q = self.db.query(models.Event)
+        
+        # If search is provided, join with ActivityType to search by name
+        if search:
+            q = q.join(models.ActivityType)
+            search_term = f"%{search}%"
+            q = q.filter(
+                (models.ActivityType.name.ilike(search_term)) |
+                (models.Event.kecamatan.ilike(search_term))
+            )
+        
         if dapil:
             q = q.filter(models.Event.dapil == dapil)
         if activity_type_id:
@@ -31,5 +42,20 @@ class EventRepository:
             q = q.filter(models.Event.date <= date_to)
         
         total = q.count()
-        items = q.offset(offset).limit(limit).all()
+        items = q.order_by(models.Event.date.desc()).offset(offset).limit(limit).all()
         return items, total
+
+    def get(self, id: int) -> Optional[models.Event]:
+        return self.db.query(models.Event).get(id)
+
+    def update(self, event: models.Event, data: dict):
+        for key, value in data.items():
+            setattr(event, key, value)
+        self.db.commit()
+        self.db.refresh(event)
+        return event
+
+    def delete(self, event: models.Event):
+        self.db.delete(event)
+        self.db.commit()
+

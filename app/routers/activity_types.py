@@ -17,3 +17,7 @@ def list_activity_types(svc = Depends(get_activity_type_service), user = Depends
 def delete_activity_type(activity_type_id: int, svc = Depends(get_activity_type_service), user = Depends(get_current_user)):
     return svc.delete_activity_type(activity_type_id)
 
+@router.put("/{activity_type_id}", response_model=ActivityTypeOut)
+def update_activity_type(activity_type_id: int, payload: ActivityTypeCreate, svc = Depends(get_activity_type_service), user = Depends(get_current_user)):
+    return svc.update_activity_type(activity_type_id, payload)
+

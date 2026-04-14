@@ -19,7 +19,7 @@ def seed_users():
         
         # Check if admin exists
         # Using a dummy 16 digit NIK for admin
-        ADMIN_NIK = "3204000000000001" 
+        ADMIN_NIK = "admin" 
         current_admin = user_repo.get_by_nik(ADMIN_NIK)
         if current_admin:
             print(f"Admin user ({ADMIN_NIK}) already exists.")

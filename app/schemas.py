@@ -7,34 +7,45 @@ import re
 T = TypeVar('T')
 
 def validate_nik(v: str) -> str:
+    """Validate NIK (16 digits) - only for traditional NIK"""
     if not re.match(r'^\d{16}$', v):
-        raise ValueError('NIK must be 16 digits')
+        raise ValueError('NIK harus 16 digit')
+    return v
+
+def validate_nik_or_nis(v: str, identifier_type: str = "NIK") -> str:
+    """Flexible validation for NIK or NIS (education ID)"""
+    if identifier_type == "NIK":
+        if not re.match(r'^\d{16}$', v):
+            raise ValueError('NIK harus 16 digit')
+    else:  # NIS
+        if not re.match(r'^\d{1,20}$', v):
+            raise ValueError('NIS harus berupa angka (1-20 digit)')
     return v
 
 # --- Auth ---
 class UserCreate(BaseModel):
-    nik: str
+    username: str  # New: username-based auth for SABADESA
     name: str
     password: str
+    nik: Optional[str] = None  # Optional for backward compatibility
 
     @field_validator('nik')
     def nik_must_be_valid(cls, v):
-        return validate_nik(v)
+        if v is not None:
+            return validate_nik(v)
+        return v
 
 class UserOut(BaseModel):
     id: int
-    nik: str
+    username: Optional[str] = None
+    nik: Optional[str] = None
     name: str
     class Config:
         orm_mode = True
 
 class LoginSchema(BaseModel):
-    nik: str
+    username: str  # Changed from NIK to username
     password: str
-    
-    @field_validator('nik')
-    def nik_must_be_valid(cls, v):
-        return validate_nik(v)
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -44,6 +55,9 @@ class UserUpdate(BaseModel):
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str
 
 # --- Historical Vote ---
 class HistoricalVoteCreate(BaseModel):
@@ -73,15 +87,23 @@ class ActivityTypeOut(ActivityTypeCreate):
 # --- Event ---
 class EventCreate(BaseModel):
     activity_type_id: int
-    dapil: str
+    kecamatan: str  # Primary location field
+    desa: Optional[str] = None  # Desa/Kelurahan
+    dapil: Optional[str] = None  # Category above kecamatan (optional)
     location_hierarchy: Optional[Dict[str, Any]] = None
     date: date
     target_participants: int
 
-class EventOut(EventCreate):
+class EventOut(BaseModel):
     id: int
+    activity_type_id: int
+    kecamatan: Optional[str] = None  # Made optional for legacy/missing data compatibility
+    desa: Optional[str] = None
+    dapil: Optional[str] = None
+    location_hierarchy: Optional[Dict[str, Any]] = None
+    date: date
+    target_participants: int
     created_at: datetime
-    # Could nest activity_type info here if needed
     class Config:
         orm_mode = True
 
@@ -90,23 +112,36 @@ class EventListResponse(BaseModel):
     total: int
     page: int
     size: int
+    pages: int  # Total number of pages
 
 # --- Attendee ---
 class AttendeeCreate(BaseModel):
     event_id: int
-    nik: str
+    nik: str  # Stores NIK or NIS value
+    identifier_type: str = "NIK"  # "NIK" or "NIS"
     name: str
     kecamatan: Optional[str] = None
     desa: Optional[str] = None
+    alamat: str  # Combined address
+    jenis_kelamin: str  # "L" or "P"
+    pekerjaan: str  # Occupation
+    usia: int  # Age in years
+    # Legacy fields (kept for backward compatibility)
     kampung: Optional[str] = None
     rt_rw: Optional[str] = None
 
-    @field_validator('nik')
-    def nik_must_be_valid(cls, v):
-        return validate_nik(v)
-
-class AttendeeOut(AttendeeCreate):
+class AttendeeOut(BaseModel):
     id: int
+    event_id: int
+    nik: str
+    identifier_type: str
+    name: Optional[str] = None
+    kecamatan: Optional[str] = None
+    desa: Optional[str] = None
+    alamat: Optional[str] = None
+    jenis_kelamin: Optional[str] = None
+    pekerjaan: Optional[str] = None
+    usia: Optional[int] = None
     created_at: datetime
     class Config:
         orm_mode = True

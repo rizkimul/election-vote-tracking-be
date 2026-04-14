@@ -8,11 +8,9 @@ from ..repositories.activity_type_repo import ActivityTypeRepository
 
 class AnalyticsService:
     def __init__(self, 
-                 vote_repo: HistoricalVoteRepository,
                  event_repo: EventRepository,
                  attendee_repo: AttendeeRepository,
                  activity_repo: ActivityTypeRepository):
-        self.vote_repo = vote_repo
         self.event_repo = event_repo
         self.attendee_repo = attendee_repo
         self.activity_repo = activity_repo
@@ -30,105 +28,102 @@ class AnalyticsService:
              attendee_query = attendee_query.filter(models.Attendee.kecamatan == kecamatan)
         total_attendees = attendee_query.count()
         
-        # Total votes from historical data - Logic Modified to split Web vs Import
-        base_vote_query = self.vote_repo.db.query(func.sum(models.HistoricalVote.total_votes))
-        
-        if dapil:
-            base_vote_query = base_vote_query.filter(models.HistoricalVote.dapil == dapil)
+        # Count active wilayah (kecamatan with activities)
+        # SABADESA: "Wilayah Tersentuh" based on attendees location
+        wilayah_query = self.attendee_repo.db.query(func.count(func.distinct(models.Attendee.kecamatan)))
         if kecamatan:
-            base_vote_query = base_vote_query.filter(models.HistoricalVote.kecamatan == kecamatan)
-            
-        # 1. Total Votes (All)
-        total_votes = base_vote_query.scalar() or 0
-        
-        # 2. Web Votes (source='manual')
-        web_vote_query = base_vote_query.filter(models.HistoricalVote.source == 'manual')
-        total_votes_web = web_vote_query.scalar() or 0
-        
-        # 3. Import Votes (source != 'manual' or 'import')
-        # Assuming anything not manual is import for now, or explicitly check 'import'
-        # To be safe and cover 'import' or nulls if any (though migration set default), let's use != manual
-        import_vote_query = base_vote_query.filter(models.HistoricalVote.source != 'manual')
-        total_votes_import = import_vote_query.scalar() or 0
-        
+             wilayah_query = wilayah_query.filter(models.Attendee.kecamatan == kecamatan)
 
-        # Count active wilayah (kecamatan)
-        wilayah_query = self.vote_repo.db.query(func.count(func.distinct(models.HistoricalVote.kecamatan)))
-        # We generally want wilayah count based on the relevant filter scope. 
-        # If we removed the source filter from UI, this should probably reflect "Active Areas" generally.
-        if dapil:
-            wilayah_query = wilayah_query.filter(models.HistoricalVote.dapil == dapil)
-        
         wilayah_count = wilayah_query.scalar() or 0
+        
+        # Count active desa/kelurahan
+        desa_query = self.attendee_repo.db.query(func.count(func.distinct(models.Attendee.desa)))
+        if kecamatan:
+             desa_query = desa_query.filter(models.Attendee.kecamatan == kecamatan)
+        
+        desa_count = desa_query.scalar() or 0
         
         return {
             "total_events": total_events,
             "total_attendees": total_attendees,
-            "total_votes": total_votes,
-            "total_votes_web": total_votes_web,
-            "total_votes_import": total_votes_import,
-            "wilayah_count": wilayah_count
+            "total_votes": 0,  # Legacy field, returning 0
+            "total_votes_web": 0,
+            "total_votes_import": 0,
+            "wilayah_count": wilayah_count,
+            "desa_count": desa_count
         }
 
     def get_votes_summary(self, dapil: str = None, kecamatan: str = None, source: str = 'all') -> List[Dict[str, Any]]:
-        # Aggregate votes by party from JSON `data` column
-        # Using Python side aggregation for flexibility with JSON structure
-        
-        # If source filter is removed from UI, we probably want 'all' by default here
-        filter_source = source if source != 'all' else None
-        
-        votes = self.vote_repo.list_filtered(limit=100000, dapil=dapil, kecamatan=kecamatan, source=filter_source)
-        
-        party_totals = {}
-        
-        for v in votes:
-            if v.data:
-                try:
-                    # data might be a dict or a string depending on serialization
-                    data_source = v.data
-                    if isinstance(data_source, dict):
-                        for party, count in data_source.items():
-                            # Fix: Ensure count is treated as integer
-                            safe_count = int(count) if count is not None else 0
-                            party_totals[party] = party_totals.get(party, 0) + safe_count
-                except Exception as e:
-                    # Log error or skip bad record
-                    continue
-        
-        # Format for frontend chart { "name": "Partai A", "value": 100 }
-        result = [{"name": k, "value": v} for k, v in party_totals.items()]
-        # Sort by value desc
-        result.sort(key=lambda x: x["value"], reverse=True)
-        return result
+        # SABADESA: Vote tracking removed. Return empty list.
+        return []
 
-    def get_heatmap_data(self, dapil: str = None, kecamatan: str = None, source: str = 'all') -> List[Dict[str, Any]]:
-        # Aggregate total votes per Kecamatan for Heatmap
-        # Returning list of { "kecamatan": "Name", "intensity": 1234 }
+    def get_heatmap_data(self, dapil: str = None, kecamatan: str = None, source: str = 'all', level: str = 'kecamatan') -> List[Dict[str, Any]]:
+        # SABADESA: Aggregate participants per Kecamatan or Desa
         
-        # We can use SQL group by for this
-        Vote = models.HistoricalVote
-        query = self.vote_repo.db.query(
-            Vote.kecamatan, 
-            func.sum(Vote.total_votes).label('total')
+        if level == 'all':
+            # Fetch both and combine
+            # 1. Kecamatan
+            q_kec = self.attendee_repo.db.query(
+                models.Attendee.kecamatan.label('region_name'), 
+                func.count(models.Attendee.id).label('total')
+            ).filter(models.Attendee.kecamatan != None)
+            
+            if dapil:
+                q_kec = q_kec.join(models.Event).filter(models.Event.dapil == dapil)
+            if kecamatan: # If filtered by specific kecamatan, only show that kecamatan aggregate
+                q_kec = q_kec.filter(models.Attendee.kecamatan == kecamatan)
+                
+            q_kec = q_kec.group_by(models.Attendee.kecamatan)
+            res_kec = q_kec.all()
+            
+            # 2. Desa
+            q_desa = self.attendee_repo.db.query(
+                models.Attendee.desa.label('region_name'), 
+                func.count(models.Attendee.id).label('total')
+            ).filter(models.Attendee.desa != None)
+
+            if dapil:
+                q_desa = q_desa.join(models.Event).filter(models.Event.dapil == dapil)
+            if kecamatan:
+                q_desa = q_desa.filter(models.Attendee.kecamatan == kecamatan)
+                
+            q_desa = q_desa.group_by(models.Attendee.desa)
+            res_desa = q_desa.all()
+            
+            # Combine
+            data = [{"kecamatan": row.region_name, "intensity": row.total, "type": "Kecamatan"} for row in res_kec]
+            data.extend([{"kecamatan": row.region_name, "intensity": row.total, "type": "Desa"} for row in res_desa])
+            
+            return data
+
+        group_col = models.Attendee.kecamatan
+        if level == 'desa':
+            group_col = models.Attendee.desa
+
+        query = self.attendee_repo.db.query(
+            group_col.label('region_name'), 
+            func.count(models.Attendee.id).label('total')
         )
         
-        if source and source != 'all':
-            query = query.filter(Vote.source == source)
-        
+        # Join with event if we need to filter by Dapil (and Attendee doesn't have it, though Event does)
         if dapil:
-            query = query.filter(Vote.dapil == dapil)
-        if kecamatan:
-            query = query.filter(Vote.kecamatan == kecamatan)
+            query = query.join(models.Event).filter(models.Event.dapil == dapil)
             
-        result = query.group_by(Vote.kecamatan).all()
+        if kecamatan:
+            query = query.filter(models.Attendee.kecamatan == kecamatan)
+            
+        # Group by non-null region
+        query = query.filter(group_col != None).group_by(group_col)
         
-        return [{"kecamatan": row.kecamatan, "intensity": row.total, "type": "votes"} for row in result]
+        result = query.all()
+        
+        # Return "kecamatan" key for backward compatibility, or use region_name
+        # The frontend expects "kecamatan" currently. 
+        # We map region_name to "kecamatan" key.
+        return [{"kecamatan": row.region_name, "intensity": row.total, "type": level.capitalize()} for row in result]
 
     def get_engagement_trends(self) -> List[Dict[str, Any]]:
         # Aggregate attendees by month
-        # Event.date is a python date object in SQLAlchemy result if defined as Date
-        
-        # Get all events with their attendee counts
         results = self.event_repo.db.query(
             models.Event.date, 
             func.count(models.Attendee.id).label('count')
@@ -137,13 +132,10 @@ class AnalyticsService:
         monthly_data = {}
         for event_date, count in results:
             if not event_date: continue
-            # event_date is datetime.date object
             month_key = event_date.strftime("%Y-%m")
             monthly_data[month_key] = monthly_data.get(month_key, 0) + count
             
-        # Sort and Format
         sorted_months = sorted(monthly_data.keys())
-        # Return last 6 months or all
         return [{"month": m, "participants": monthly_data[m]} for m in sorted_months]
 
     def get_activity_distribution(self) -> List[Dict[str, Any]]:
@@ -153,7 +145,57 @@ class AnalyticsService:
             func.count(models.Event.id).label('count')
         ).join(models.Event).group_by(models.ActivityType.name).all()
         
-        # Consistent colors could be mapped here or on frontend
-        # For now just return name/value
         return [{"name": row.name, "value": row.count} for row in query]
-from sqlalchemy import func
+
+    def get_gender_distribution(self) -> List[Dict[str, Any]]:
+        """Aggregate attendees by gender (jenis_kelamin)"""
+        query = self.attendee_repo.db.query(
+            models.Attendee.jenis_kelamin,
+            func.count(models.Attendee.id).label('count')
+        ).filter(models.Attendee.jenis_kelamin != None).group_by(models.Attendee.jenis_kelamin).all()
+        
+        # Map gender codes to labels
+        gender_labels = {"L": "Laki-laki", "P": "Perempuan"}
+        return [{"name": gender_labels.get(row.jenis_kelamin, row.jenis_kelamin), "value": row.count} for row in query]
+
+    def get_age_distribution(self) -> List[Dict[str, Any]]:
+        """Aggregate attendees by age ranges (generations)"""
+        # Fetch all attendees with age data
+        attendees = self.attendee_repo.db.query(models.Attendee.usia).filter(
+            models.Attendee.usia != None
+        ).all()
+        
+        # Define generation-based age ranges (starting from 17 for election eligibility)
+        # Generation name and age range label for display
+        generations = [
+            {"name": "Gen Z", "label": "17-27", "min": 17, "max": 27},
+            {"name": "Millennial", "label": "28-43", "min": 28, "max": 43},
+            {"name": "Gen X", "label": "44-59", "min": 44, "max": 59},
+            {"name": "Baby Boomer", "label": "60-78", "min": 60, "max": 78},
+            {"name": "Silent Gen", "label": "79+", "min": 79, "max": 200},
+        ]
+        
+        # Count by range
+        range_counts = {gen["label"]: 0 for gen in generations}
+        for (usia,) in attendees:
+            for gen in generations:
+                if gen["min"] <= usia <= gen["max"]:
+                    range_counts[gen["label"]] += 1
+                    break
+        
+        # Return with age range as the name for chart labels
+        return [
+            {"name": f"{gen['label']} tahun", "label": gen["label"], "value": range_counts[gen["label"]]} 
+            for gen in generations if range_counts[gen["label"]] > 0
+        ]
+
+    def get_activities_per_kecamatan(self) -> List[Dict[str, Any]]:
+        """Count events per sub-district (kecamatan), return top results for pie chart"""
+        query = self.event_repo.db.query(
+            models.Event.kecamatan,
+            func.count(models.Event.id).label('count')
+        ).filter(models.Event.kecamatan != None).group_by(models.Event.kecamatan).order_by(
+            func.count(models.Event.id).desc()
+        ).limit(7).all()  # Top 7 for readability
+        
+        return [{"name": row.kecamatan, "value": row.count} for row in query]

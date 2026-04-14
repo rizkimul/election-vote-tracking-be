@@ -50,19 +50,18 @@ def get_activity_type_service(repo: ActivityTypeRepository = Depends(get_activit
 
 from .services.analytics_service import AnalyticsService
 def get_analytics_service(
-    vote_repo: HistoricalVoteRepository = Depends(get_historical_vote_repo),
     event_repo: EventRepository = Depends(get_event_repo),
     attendee_repo: AttendeeRepository = Depends(get_attendee_repo),
     activity_repo: ActivityTypeRepository = Depends(get_activity_type_repo)
 ):
-    return AnalyticsService(vote_repo, event_repo, attendee_repo, activity_repo)
+    return AnalyticsService(event_repo, attendee_repo, activity_repo)
 
 from .services.prioritization_service import PrioritizationService
 def get_prioritization_service(
-    vote_repo: HistoricalVoteRepository = Depends(get_historical_vote_repo),
-    event_repo: EventRepository = Depends(get_event_repo)
+    event_repo: EventRepository = Depends(get_event_repo),
+    attendee_repo: AttendeeRepository = Depends(get_attendee_repo)
 ):
-    return PrioritizationService(vote_repo, event_repo)
+    return PrioritizationService(event_repo, attendee_repo)
 
 # --- Authenticated user dependency ---
 def get_current_user(token: str = Depends(oauth2_scheme),
@@ -70,10 +69,13 @@ def get_current_user(token: str = Depends(oauth2_scheme),
                      user_repo: UserRepository = Depends(get_user_repo)):
     payload = auth_svc.decode_token(token)
     if not payload or "sub" not in payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
-    nik = payload["sub"]
-    user = user_repo.get_by_nik(nik)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kredensial otentikasi tidak valid")
+    identifier = payload["sub"]
+    # Try username first (SABADESA), then fallback to NIK (legacy)
+    user = user_repo.get_by_username(identifier)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        user = user_repo.get_by_nik(identifier)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Pengguna tidak ditemukan")
     return user
 
